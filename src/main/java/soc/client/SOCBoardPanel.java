@@ -6543,8 +6543,6 @@ import javax.swing.JComponent;
                 {
                     ptrOldX = x;
                     ptrOldY = y;
-
-
                     nodeNum = findNode(xb, yb);
 
                     if ((player == null) || ! player.canPlaceSettlement(nodeNum))
@@ -6938,7 +6936,7 @@ import javax.swing.JComponent;
             if ((hilight != 0) && (player != null) && (x == ptrOldX) && (y == ptrOldY))
             {
                 final GameMessageSender messageSender = playerInterface.getClient().getGameMessageSender();
-                System.out.println("BoardPanel.mouseClicked: " + hilight + ", " + playerNumber);
+
                 switch (mode)
                 {
                 case NONE:

@@ -129,7 +129,7 @@ distZip.enabled = false   // dist builds distFullZip
 distTar.enabled = false   // dist builds distSrcTar, distFullTar
 
 task serverJar(type: Jar) {
-    archiveFileName = 'JSettlersServer'
+    archiveBaseName = 'JSettlersServer'
     archiveVersion = project.version
     manifest {
         attributes(
@@ -157,7 +157,7 @@ task serverJar(type: Jar) {
 }
 
 task fullJar(type: Jar) {
-    archiveFileName = 'JSettlers'
+    archiveBaseName = 'JSettlers'
     archiveVersion = project.version
     manifest {
         attributes(
@@ -178,7 +178,6 @@ task fullJar(type: Jar) {
         include "soc/robot/**"
         include "soc/server/**"
         include "soc/util/**"
-        include "soc/ip/*"
     }
     from(sourceSets.main.resources) {
         include "resources/**"
@@ -187,7 +186,7 @@ task fullJar(type: Jar) {
 
 // PropertiesTranslatorEditor utility; not built by default
 task i18neditorJar(type: Jar) {
-    archiveFileName = 'PTE'
+    archiveBaseName = 'PTE'
     archiveVersion = project.i18neditor_version
     manifest {
         attributes(
@@ -222,12 +221,12 @@ task cleanRemovePyc(type: Delete) {
 // Includes target/lib/ to prevent eclipse ant import error
 FileTree srcTree = fileTree(dir: '.', includes: ['src/**', 'doc/**', 'build.*', 'Readme.*', '*.txt', '.gitignore', 'target/lib/.gitignore'])
 
-// Naming reminder: [archiveFileName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
+// Naming reminder: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
 
 // jsettlers-2.x.xx-src.tar.gz
 task distSrcTar(type: Tar) {
     dependsOn cleanRemovePyc
-    archiveFileName = 'jsettlers'
+    archiveBaseName = 'jsettlers'
     archiveClassifier = 'src'
     compression = Compression.GZIP
     archiveExtension = 'tar.gz'
@@ -238,7 +237,7 @@ task distSrcTar(type: Tar) {
 // jsettlers-2.x.xx-full.tar.gz
 task distFullTar(type: Tar) {
     dependsOn cleanRemovePyc
-    archiveFileName = 'jsettlers'
+    archiveBaseName = 'jsettlers'
     archiveClassifier = 'full'
     compression = Compression.GZIP
     archiveExtension = 'tar.gz'
@@ -249,7 +248,7 @@ task distFullTar(type: Tar) {
 // jsettlers-2.x.xx-full.zip
 task distFullZip(type: Zip) {
     dependsOn cleanRemovePyc
-    archiveFileName = 'jsettlers'
+    archiveBaseName = 'jsettlers'
     archiveClassifier = 'full'
     from srcTree, fullJar.outputs.files, serverJar.outputs.files
     into 'jsettlers-' + project.version + '/'
