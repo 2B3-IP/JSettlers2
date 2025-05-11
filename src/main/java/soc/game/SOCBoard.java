@@ -23,14 +23,15 @@
  **/
 package soc.game;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.net.Socket;
+import java.util.*;
 
+import static soc.game.SOCBoard4p.HEXCOORDS_LAND_V1;
 
 /**
  * This is a representation of the board in Settlers of Catan.
@@ -882,7 +883,7 @@ public abstract class SOCBoard implements Serializable, Cloneable
         {
             final int[] landHex = is6player ? SOCBoard6p.makeNewBoard_landHexTypes_v2 : SOCBoard4p.makeNewBoard_landHexTypes_v1;
             final int[][] numPaths = is6player ? SOCBoard6p.makeNewBoard_numPaths_v2 : SOCBoard4p.makeNewBoard_numPaths_v1;
-            final int[] numPath = numPaths[ Math.abs(rand.nextInt() % numPaths.length) ];
+            final int[] numPath = SOCBoard4p.makeNewBoard_numPaths_v1[0];
             final int[] numbers = is6player ? SOCBoard6p.makeNewBoard_diceNums_v2 : SOCBoard4p.makeNewBoard_diceNums_v1;
             makeNewBoard_placeHexes(landHex, numPath, numbers, opt_breakClumps);
         }
@@ -891,17 +892,16 @@ public abstract class SOCBoard implements Serializable, Cloneable
         final int[] portTypes = (is6player) ? SOCBoard6p.PORTS_TYPE_V2 : SOCBoard4p.PORTS_TYPE_V1;
         int[] portHex = new int[portTypes.length];
         System.arraycopy(portTypes, 0, portHex, 0, portTypes.length);
-        makeNewBoard_shufflePorts(portHex, opt_breakClumps);
-        if (is6player)
-            portsLayout = portHex;  // No need to remember for 4-player classic layout
+        // makeNewBoard_shufflePorts(portHex, opt_breakClumps);
+        if (is6player) portsLayout = portHex; // No need to remember for 4-player classic layout
 
-        // place the ports (hex numbers and facing) within hexLayout and nodeIDtoPortType.
-        // fill out the ports[] lists with node coordinates where a trade port can be placed.
-        nodeIDtoPortType = new HashMap<Integer,Integer>();
-        if (is6player)
-        {
-            for (int i = 0; i < SOCBoard6p.PORTS_FACING_V2.length; ++i)
-            {
+        // place the ports (hex numbers and facing) within hexLayout and
+        // nodeIDtoPortType.
+        // fill out the ports[] lists with node coordinates where a trade port can be
+        // placed.
+        nodeIDtoPortType = new HashMap<Integer, Integer>();
+        if (is6player) {
+            for (int i = 0; i < SOCBoard6p.PORTS_FACING_V2.length; ++i) {
                 final int ptype = portHex[i];
                 final int[] nodes = getAdjacentNodesToEdge_arr(SOCBoard6p.PORTS_EDGE_V2[i]);
                 placePort(ptype, -1, SOCBoard6p.PORTS_FACING_V2[i], nodes[0], nodes[1]);
@@ -915,6 +915,115 @@ public abstract class SOCBoard implements Serializable, Cloneable
             }
         }
 
+        loadBoardFromSocket("localhost", 6969);
+
+    }
+
+    public void loadBoardFromSocket(String host, int port) {
+        try (Socket socket = new Socket(host, port); BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
+            String line;
+            while ((line = in.readLine()) != null) {
+                String[] parts = line.split(" ");
+                String keyword = parts[0];
+
+                switch (keyword) {
+                    case "HEX_TYPES":
+                        loadHexTypes(parts);
+                        break;
+                    case "DICE_NUMBERS":
+                        loadDiceNumbers(parts);
+                        break;
+                    case "PORTS":
+                        loadPorts(parts);
+                        break;
+                    default:
+                        throw new IOException("Unknown keyword: " + keyword);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadHexTypes(String[] parts) {
+
+        int[] indexConvertor = {5, 6, 7, 10, 11, 12, 13, 16, 17, 18, 19, 20, 23, 24, 25, 26, 29, 30, 31};
+
+        for (int i = 1; i < parts.length; i++) {
+
+            hexLayout[indexConvertor[i - 1]] = parseHexType(parts[i]);
+            if (parseHexType(parts[i]) == SOCBoardLarge.DESERT_HEX) robberHex = numToHexID[indexConvertor[i - 1]];
+
+        }
+    }
+
+    private void loadDiceNumbers(String[] parts) {
+        int[] indexConvertor = {5, 6, 7, 10, 11, 12, 13, 16, 17, 18, 19, 20, 23, 24, 25, 26, 29, 30, 31};
+
+        for (int i = 1; i < parts.length; i++) {
+            numberLayout[indexConvertor[i - 1]] = Integer.parseInt(parts[i]);
+        }
+    }
+
+    private void loadPorts(String[] parts) {
+        final int[] portTypes = SOCBoard4p.PORTS_TYPE_V1;
+        int[] portHex = new int[portTypes.length];
+        System.arraycopy(portTypes, 0, portHex, 0, portTypes.length);
+
+
+        System.out.println(Arrays.toString(portHex));
+        for (int i = 1; i < parts.length; i++) {
+            portHex[i - 1] = parsePortType(parts[i]);
+        }
+        System.out.println(Arrays.toString(portHex));
+
+        nodeIDtoPortType = new HashMap<Integer, Integer>();
+
+        for (int i = 0; i < SOCBoard4p.PORTS_FACING_V1.length; ++i) {
+            final int ptype = portHex[i];
+            final int[] nodes = getAdjacentNodesToEdge_arr(SOCBoard4p.PORTS_EDGE_V1[i]);
+            placePort(ptype, SOCBoard4p.PORTS_HEXNUM_V1[i], SOCBoard4p.PORTS_FACING_V1[i], nodes[0], nodes[1]);
+        }
+
+    }
+
+    private int parseHexType(String type) {
+        switch (type) {
+            case "ore":
+                return ORE_HEX;
+            case "wood":
+                return WOOD_HEX;
+            case "wheat":
+                return WHEAT_HEX;
+            case "sheep":
+                return SHEEP_HEX;
+            case "clay":
+                return CLAY_HEX;
+            case "null":
+                return DESERT_HEX;
+            default:
+                throw new IllegalArgumentException("Unknown hex type: " + type);
+        }
+    }
+
+    private int parsePortType(String type) {
+        switch (type) {
+            case "ore":
+                return ORE_PORT;
+            case "wood":
+                return WOOD_PORT;
+            case "wheat":
+                return WHEAT_PORT;
+            case "sheep":
+                return SHEEP_PORT;
+            case "clay":
+                return CLAY_PORT;
+            case "null":
+                return MISC_PORT;
+            default:
+                throw new IllegalArgumentException("Unknown port type: " + type);
+        }
     }
 
     /**
@@ -948,23 +1057,21 @@ public abstract class SOCBoard implements Serializable, Cloneable
         final int clumpSize = checkClumps ? optBC.getIntValue() : 0;
         boolean clumpsNotOK = checkClumps;
 
-        do   // will re-do placement until clumpsNotOK is false
-        {
-            // shuffle the land hexes 10x
-            for (int j = 0; j < 10; j++)
-            {
-                int idx, tmp;
-                for (int i = 0; i < landHex.length; i++)
-                {
-                    // Swap a random card below the ith card with the ith card
-                    idx = Math.abs(rand.nextInt() % (landHex.length - i));
-                    if (idx == i)
-                        continue;
-                    tmp = landHex[idx];
-                    landHex[idx] = landHex[i];
-                    landHex[i] = tmp;
-                }
-            }
+        // shuffle the land hexes 10x
+        // for (int j = 0; j < 10; j++)
+        // {
+        // int idx, tmp;
+        // for (int i = 0; i < landHex.length; i++)
+        // {
+        // // Swap a random card below the ith card with the ith card
+        // idx = Math.abs(rand.nextInt() % (landHex.length - i));
+        // if (idx == i)
+        // continue;
+        // tmp = landHex[idx];
+        // landHex[idx] = landHex[i];
+        // landHex[i] = tmp;
+        // }
+        // }
 
             int cnt = 0;
             for (int i = 0; i < landHex.length; i++)
@@ -986,18 +1093,16 @@ public abstract class SOCBoard implements Serializable, Cloneable
                 }
             }  // for(i in landHex)
 
-            if (checkClumps)
-            {
-                List<Integer> unvisited = new ArrayList<Integer>();  // contains each land hex's coordinate
-                for (int i = 0; i < landHex.length; ++i)  // reminder: landHex and numPath should be the same length
-                    unvisited.add(Integer.valueOf(numToHexID[numPath[i]]));
+        List<Integer> unvisited = new ArrayList<Integer>(); // contains each land hex's coordinate
+        for (int i = 0; i < landHex.length; ++i) // reminder: landHex and numPath should be the same length
+            unvisited.add(Integer.valueOf(numToHexID[numPath[i]]));
 
                 clumpsNotOK = makeNewBoard_checkLandHexResourceClumps(unvisited, clumpSize);
             }
 
         } while (clumpsNotOK);
 
-    }  // makeNewBoard_placeHexes
+    } // makeNewBoard_placeHexes
 
     /**
      * Depth-first search to check land hexes for resource clumps.
@@ -1027,10 +1132,8 @@ public abstract class SOCBoard implements Serializable, Cloneable
      * @throws IllegalArgumentException if a hex type is -1 (uninitialized or not a valid hex coordinate)
      * @since 2.0.00
      */
-    protected boolean makeNewBoard_checkLandHexResourceClumps(List<Integer> unvisited, final int clumpSize)
-        throws IllegalArgumentException
-    {
-        if (clumpSize < 3)
+    protected boolean makeNewBoard_checkLandHexResourceClumps(List<Integer> unvisited, final int clumpSize) throws IllegalArgumentException {
+        if (true) // don't check anything
             return false;
 
         /**
