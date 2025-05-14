@@ -356,7 +356,7 @@ def static findPythonOrPython3() {
     if (proc.exitValue() == 0)
         return 'python'
     else
-        throw new GradleScriptException("build environment problem: couldn't run python3 nor python")
+        throw new GradleException("Untracked files in repo: Commit, move, or .gitignore")
 }
 
 clean {
