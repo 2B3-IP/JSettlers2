@@ -1125,7 +1125,7 @@ import javax.swing.JComponent;
      * @see #debugShowPotentials
      * @since 2.0.00
      */
-    private boolean debugShowCoordsTooltip = false;
+    private boolean debugShowCoordsTooltip = true;
 
     /**
      * For debugging, flags to show board and player potential/legal coordinate sets for
