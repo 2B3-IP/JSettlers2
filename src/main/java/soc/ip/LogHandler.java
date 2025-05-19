@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import soc.ip.CoordBridge;
 
 public class LogHandler {
 
@@ -17,11 +18,14 @@ public class LogHandler {
         final int pieceType = mes.getPieceType();
         final int coord = mes.getCoordinates();
 
-        String logMessage;
-        if (mes.getPlayerNumber() == 0) { // only for the player
-            logMessage = "CLIENT" + mes.getPlayerNumber() + " received " + SOCPlayingPiece.getTypeName(pieceType) + " " + coord;
-        } else { // bot
-            logMessage = "BOT" + mes.getPlayerNumber() + " sent " + SOCPlayingPiece.getTypeName(pieceType) + " " + coord;
+        String logMessage = mes.getPlayerNumber() == 0 ? "CLIENT" + mes.getPlayerNumber() + " sent " : "BOT" + mes.getPlayerNumber() + " sent ";
+        switch (SOCPlayingPiece.getTypeName(pieceType)){
+
+            case "SETTLEMENT" : {
+                logMessage += "SETTLEMET " + CoordBridge.getVertex(coord) ;
+                break;
+            }
+
         }
 
         System.out.println(logMessage);
