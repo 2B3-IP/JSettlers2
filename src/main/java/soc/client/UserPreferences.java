@@ -1,13 +1,15 @@
-package soc.client;
 
+        package soc.client;
 import java.util.HashMap;
 import java.util.Map;
+
 
 public class UserPreferences {
 
     private static final Map<String, Object> prefs = new HashMap<>();
 
     static {
+        // Default preferences
         prefs.put("soundOn", true);
         prefs.put("botTradeRejectSec", 5);
         prefs.put("newGameRandomBoard", true);
@@ -42,11 +44,16 @@ public class UserPreferences {
         prefs.put(prefKey, val);
     }
 
+    /**
+     * Clear specific preferences based on a comma-separated key list.
+     * @param prefKeyList Comma-separated keys to remove from prefs.
+     */
     public static void clear(final String prefKeyList) {
         if (prefKeyList == null || prefKeyList.isEmpty()) return;
         for (String key : prefKeyList.split(",")) {
-            prefs.remove(key);
+            prefs.remove(key.trim());
         }
         System.err.println("Cleared hardcoded preferences: " + prefKeyList);
     }
 }
+

@@ -551,7 +551,7 @@ public class SwingMainDisplay extends JPanel implements MainDisplay
     public SwingMainDisplay
         (boolean hasConnectOrPractice, final SOCPlayerClient client, final int displayScaleFactor)
         throws IllegalArgumentException
-    {
+    {System.out.println("!!! sunt aiciii");
         if (client == null)
             throw new IllegalArgumentException("null client");
         if (displayScaleFactor < 1)
@@ -1798,192 +1798,16 @@ public class SwingMainDisplay extends JPanel implements MainDisplay
      */
     public void gameWithOptionsBeginSetup(final boolean forPracticeServer, final boolean didAuth)
     {
-        if (newGameOptsFrame != null)
-        {
-            newGameOptsFrame.setVisible(true);
-            return;
-        }
+        String defaultGameName = "HardcodedGame";
 
-        // Have we authenticated our password?  If not, do so now before creating newGameOptsFrame.
-        // Even if the server doesn't support accounts or passwords, this will name our connection
-        // and reserve our nickname.
-        if ((! (forPracticeServer || client.gotPassword))
-            && (client.sVersion >= SOCAuthRequest.VERSION_FOR_AUTHREQUEST))
-        {
-            if (! readValidNicknameAndPassword())
-                return;
+        // Creează opțiuni hardcodate
+        SOCGameOptionSet opts = new SOCGameOptionSet();
 
-            // handleSTATUSMESSAGE(SV_OK) will check the isNGOFWaitingForAuthStatus flag and
-            // call gameWithOptionsBeginSetup again if set.  At that point client.gotPassword
-            // will be true, so we'll bypass this section.
 
-            client.isNGOFWaitingForAuthStatus = true;
-            status.setText(client.strings.get("pcli.message.talkingtoserv"));  // "Talking to server..."
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));  // NGOF create calls setCursor(DEFAULT_CURSOR)
-            net.putNet(new SOCAuthRequest
-                (SOCAuthRequest.ROLE_GAME_PLAYER, client.getNickname(forPracticeServer), client.password,
-                 SOCAuthRequest.SCHEME_CLIENT_PLAINTEXT, net.getHost()).toCmd());
-
-            return;
-        }
-
-        if (didAuth)
-        {
-            nick.setEditable(false);
-            pass.setText("");
-            pass.setEditable(false);
-        }
-
-        ServerGametypeInfo opts;
-
-        // What server are we going against? Do we need to ask it for options?
-        {
-            boolean fullSetIsKnown = false;
-
-            if (forPracticeServer)
-            {
-                opts = client.practiceServGameOpts;
-                if (! opts.allOptionsReceived)
-                {
-                    // We know what the practice options will be,
-                    // because they're in our own JAR file.
-                    // Also, the practice server isn't started yet,
-                    // so we can't ask it for the options.
-                    // The practice server will be started when the player clicks
-                    // "Create Game" in the NewGameOptionsFrame, causing the new
-                    // game to be requested from askStartGameWithOptions.
-                    fullSetIsKnown = true;
-                    opts.knownOpts = SOCServer.localizeKnownOptions(client.cliLocale, true);
-                    opts.receiveDefaults(null, Version.versionNumber());
-                }
-
-                if (! opts.allScenStringsReceived)
-                {
-                    // Game scenario localized text. As with game options, the practice client and
-                    // practice server aren't started yet, so we can't go through them to request localization.
-                    client.localizeGameScenarios
-                        (SOCServer.localizeGameScenarios(client.cliLocale, null, true, false, null),
-                         false, true, true);
-                }
-            } else {
-                opts = client.tcpServGameOpts;
-                if ((! opts.allOptionsReceived) && (client.sVersion < SOCNewGameWithOptions.VERSION_FOR_NEWGAMEWITHOPTIONS))
-                {
-                    // Server doesn't support them.  Don't ask it.
-                    fullSetIsKnown = true;
-                    opts.knownOpts = null;
-                }
-            }
-
-            if (fullSetIsKnown)
-            {
-                opts.allOptionsReceived = true;
-                opts.defaultsReceived = true;
-            }
-        }
-
-        // Do we already have info on all options?
-        boolean askedAlready, optsAllKnown, knowDefaults;
-        synchronized (opts)
-        {
-            askedAlready = opts.askedDefaultsAlready;
-            optsAllKnown = opts.allOptionsReceived;
-            knowDefaults = opts.defaultsReceived;
-        }
-
-        if (askedAlready && ! (optsAllKnown && knowDefaults))
-        {
-            // If we're only waiting on defaults, how long ago did we ask for them?
-            // If > 5 seconds ago, assume we'll never know the unknown ones, and present gui frame.
-            if (optsAllKnown && (5000 < Math.abs(System.currentTimeMillis() - opts.askedDefaultsTime)))
-            {
-                knowDefaults = true;
-                opts.defaultsReceived = true;
-                if (gameOptsDefsTask != null)
-                {
-                    gameOptsDefsTask.cancel();
-                    gameOptsDefsTask = null;
-                }
-                // since optsAllKnown, will present frame below.
-            } else {
-                return;  // <--- Early return: Already waiting for an answer ----
-            }
-        }
-
-        if (optsAllKnown && knowDefaults)
-        {
-            // All done, present the options window frame
-            newGameOptsFrame = showGameOptions(null, opts.getNewGameOpts(), forPracticeServer);
-
-            return;  // <--- Early return: Show options to user ----
-        }
-
-        // OK, we need to sync scenario and option info.
-        // Ask the server by sending GAMEOPTIONGETDEFAULTS.
-        // (This will never happen for practice games, see above.)
-
-        // May take a while for server to send our info.
-        // The new-game-options window will clear this cursor
-        // (NewGameOptionsFrame constructor)
-
-        status.setText(client.strings.get("pcli.message.talkingtoserv"));  // "Talking to server..."
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-        final int cliVers = Version.versionNumber();
-        if ((! forPracticeServer) && (! opts.allScenInfoReceived)
-            && (client.sVersion >= SOCScenario.VERSION_FOR_SCENARIOS))
-        {
-            // Before game option defaults, ask for any updated or localized scenario info;
-            // that will all be received before game option defaults, so client will have it
-            // before NewGameOptionsFrame appears with the scenarios dropdown Choice widget.
-
-            List<String> changes = null;
-
-            if (cliVers > client.sVersion)
-            {
-                // Client newer than server: Ask about specific new/changed scenarios which server might not know.
-
-                final List<SOCScenario> changeScens =
-                    SOCVersionedItem.itemsNewerThanVersion
-                        (client.sVersion, false, SOCScenario.getAllKnownScenarios());
-
-                if (changeScens != null)
-                {
-                    changes = new ArrayList<String>();
-                    for (SOCScenario sc : changeScens)
-                        changes.add(sc.key);
-                }
-            }
-            // Else, server is newer than our client or same version.
-            //   If server is newer: Ask for any scenario changes since our version.
-            //   If same version: Ask for i18n localized scenarios strings if available.
-
-            if (cliVers != client.sVersion)
-                client.getGameMessageSender().put
-                    (new SOCScenarioInfo(changes, true).toCmd(), false);
-                        // if cli newer: specific scenario list and MARKER_ANY_CHANGED
-                        // if srv newer: empty 'changes' list and MARKER_ANY_CHANGED
-            else if (client.wantsI18nStrings(false))
-                client.getGameMessageSender().put
-                    (new SOCLocalizedStrings
-                        (SOCLocalizedStrings.TYPE_SCENARIO, SOCLocalizedStrings.FLAG_REQ_ALL,
-                         (List<String>) null).toCmd(),
-                     false);
-        }
-
-        opts.newGameWaitingForOpts = true;
-        opts.askedDefaultsAlready = true;
-        opts.askedDefaultsTime = System.currentTimeMillis();
-        client.getGameMessageSender().put(new SOCGameOptionGetDefaults(null).toCmd(), forPracticeServer);
-
-        if (gameOptsDefsTask != null)
-            gameOptsDefsTask.cancel();
-        gameOptsDefsTask = new GameOptionDefaultsTimeoutTask(this, client.tcpServGameOpts, forPracticeServer);
-        eventTimer.schedule(gameOptsDefsTask, 5000 /* ms */ );
-
-        // Once options are received, handlers will
-        // create and show NewGameOptionsFrame.
+        // Rulează direct metoda de creare
+        askStartGameWithOptions(defaultGameName, forPracticeServer, opts, null);
     }
+
 
     /**
      * Create a blank "New Game" {@link NewGameOptionsFrame} to make a new game, or
@@ -2001,35 +1825,7 @@ public class SwingMainDisplay extends JPanel implements MainDisplay
     private NewGameOptionsFrame showGameOptions
         (final String gaName, final SOCGameOptionSet gameOpts, final boolean forPracticeServer)
     {
-        final boolean isNew = (gaName == null);
-        final NewGameOptionsFrame ngof = NewGameOptionsFrame.createAndShow
-            (isNew ? null : playerInterfaces.get(gaName), this, gaName, gameOpts, forPracticeServer, ! isNew);
-        if (isNew)
-            return ngof; // <--- Early return: No existing game ---
-
-        gameInfoFrames.put(gaName, ngof);
-
-        if ((! forPracticeServer)
-            && (client.sVersion >= SOCGameStats.VERSION_FOR_TYPE_TIMING)
-            && ! nick.getText().trim().isEmpty())
-        {
-            if (! client.gotPassword)
-            {
-                if (! readValidNicknameAndPassword())
-                    return ngof;  // <--- Early return: Can't auth, so can't send SOCGameStats ---
-
-                net.putNet(new SOCAuthRequest
-                    (SOCAuthRequest.ROLE_GAME_PLAYER, client.getNickname(false), client.password,
-                     SOCAuthRequest.SCHEME_CLIENT_PLAINTEXT, net.getHost()).toCmd());
-
-                // ideally we'd wait for auth success reply before sending SOCGameStats,
-                // but this is already a corner case
-            }
-
-            net.putNet(new SOCGameStats(gaName, SOCGameStats.TYPE_TIMING, null).toCmd());
-        }
-
-        return ngof;
+return null;
     }
 
     /**
