@@ -5,20 +5,20 @@
  * Portions of this file Copyright (C) 2012 Paul Bilnoski <paul@bilnoski.net>
  * Portions of this file Copyright (C) 2017 Ruud Poutsma <rtimon@gmail.com>
  * Portions of this file Copyright (C) 2017-2018 Strategic Conversation (STAC Project) https://www.irit.fr/STAC/
- * <P>
+ * <p>
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- * <P>
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * <P>
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * <P>
+ * <p>
  * The maintainer of this program can be reached at jsettlers@nand.net
  **/
 package soc.game;
@@ -1055,7 +1055,7 @@ public abstract class SOCBoard implements Serializable, Cloneable {
 
     private void loadHexTypes(String[] parts) {
 
-        int[] indexConvertor = {5, 6, 7, 10, 11, 12, 13, 16, 17, 18, 19, 20, 23, 24, 25, 26, 29, 30, 31};
+        int[] indexConvertor = {29, 30, 31, 23, 24, 25, 26, 16, 17, 18, 19, 20, 10, 11, 12, 13, 5, 6, 7};
 
         for (int i = 1; i < parts.length; i++) {
 
@@ -1066,7 +1066,7 @@ public abstract class SOCBoard implements Serializable, Cloneable {
     }
 
     private void loadDiceNumbers(String[] parts) {
-        int[] indexConvertor = {5, 6, 7, 10, 11, 12, 13, 16, 17, 18, 19, 20, 23, 24, 25, 26, 29, 30, 31};
+        int[] indexConvertor = {29, 30, 31, 23, 24, 25, 26, 16, 17, 18, 19, 20, 10, 11, 12, 13, 5, 6, 7};
 
         for (int i = 1; i < parts.length; i++) {
             numberLayout[indexConvertor[i - 1]] = Integer.parseInt(parts[i]);

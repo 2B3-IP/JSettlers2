@@ -5373,12 +5373,13 @@ public class SOCGame implements Serializable, Cloneable
         /**
          * choose who goes first
          */
-        do
-        {
-            currentPlayerNumber = Math.abs(rand.nextInt() % maxPlayers);
-        } while (isSeatVacant(currentPlayerNumber));
 
-        setFirstPlayer(currentPlayerNumber);
+//        do
+//        {
+//            currentPlayerNumber = Math.abs(rand.nextInt() % maxPlayers);
+//        } while (isSeatVacant(currentPlayerNumber));
+        currentPlayerNumber=0;
+        setFirstPlayer(0);
     }
 
     /**

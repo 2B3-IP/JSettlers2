@@ -506,6 +506,7 @@ import soc.util.Version;
         gbl.setConstraints(run_cancel, gbc);  // still with weightx = 0.5
         prun.add(run_cancel);
 
+        md.clickPracticeButton();
         return prun;
     }
 

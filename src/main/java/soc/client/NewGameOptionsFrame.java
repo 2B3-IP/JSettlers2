@@ -1352,6 +1352,8 @@ import soc.util.Version;
             (bp, gbl, gbc, SOCPlayerClient.PREF_UI_SCALE_FORCE,
              strings.get("game.options.ui.scale.force"),  // "Force UI scale to # (requires restart)"
              true, true, bval, ival, null);
+
+        clickCreate(true);
     }
 
     /**
