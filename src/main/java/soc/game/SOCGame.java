@@ -23,6 +23,10 @@
  * The maintainer of this program can be reached at jsettlers@nand.net
  **/
 package soc.game;
+import java.net.Socket;
+import java.io.PrintWriter;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
 
 import soc.disableDebug.D;
 import soc.game.GameAction.ActionType;
@@ -6511,7 +6515,7 @@ public class SOCGame implements Serializable, Cloneable
             die2 = Math.abs(rand.nextInt() % 6) + 1;
 //            }
 
-            currentDice = socket.GetValueFromBackend();
+            currentDice = GetValueFromBackend();
         } while ((currentDice == 7) && ! okToRoll7);
 
         currentRoll.update(die1, die2);  // also clears currentRoll.cloth (SC_CLVI)
