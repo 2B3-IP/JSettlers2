@@ -6466,6 +6466,31 @@ public class SOCGame implements Serializable, Cloneable
      *         is called again.
      * @see #getResourcesGainedFromRoll(SOCPlayer, int)
      */
+    public static int GetValueFromBackend() {
+    try (Socket socket = new Socket("localhost", 6969);
+         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
+        // Trimite comanda
+        out.println("GET_DICE");
+
+        // Primește răspunsul
+        String response = in.readLine();
+
+        if (response != null && response.startsWith("DICE_NUMBER")) {
+            String[] parts = response.split(" ");
+            return Integer.parseInt(parts[1]);
+        } else {
+            System.out.println("Unexpected response: " + response);
+        }
+
+    } catch (Exception ex) {
+        ex.printStackTrace();
+    }
+
+    return -1; // fallback dacă ceva nu merge
+}
+
     public RollResult rollDice()
     {
         // N7C: Roll no 7s until a city is built.
@@ -6486,7 +6511,7 @@ public class SOCGame implements Serializable, Cloneable
             die2 = Math.abs(rand.nextInt() % 6) + 1;
 //            }
 
-            currentDice = die1 + die2;
+            currentDice = socket.GetValueFromBackend();
         } while ((currentDice == 7) && ! okToRoll7);
 
         currentRoll.update(die1, die2);  // also clears currentRoll.cloth (SC_CLVI)
