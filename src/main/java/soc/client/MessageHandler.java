@@ -1303,6 +1303,7 @@ public class MessageHandler
         }
 
         SOCGame ga = new SOCGame(gaName, gameOpts, knownOpts);
+
         if (ga != null)
         {
             ga.isPractice = isPractice;
@@ -1312,6 +1313,7 @@ public class MessageHandler
                 client.getMainDisplay().gameJoined(ga, mes.getLayoutVS(), client.getGameReqLocalPrefs().get(gaName));
             client.getClientListeners().put(gaName, clientListener);
             client.games.put(gaName, ga);
+
         }
     }
 

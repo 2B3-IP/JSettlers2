@@ -4224,7 +4224,9 @@ public class SOCPlayerInterface extends JFrame
         public void playerSitdown(final int playerNumber, final String sitterNickname)
         {
             pi.addPlayer(sitterNickname, playerNumber);
-        }
+            if ("CLIENT".equals(sitterNickname)) {
+                pi.setClientHand(pi.getPlayerHandPanel(playerNumber));
+        }}
 
         /**
          * Game's current player and state has changed.

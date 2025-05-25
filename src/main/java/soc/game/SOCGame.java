@@ -23,7 +23,7 @@
  * The maintainer of this program can be reached at jsettlers@nand.net
  **/
 package soc.game;
-
+import soc.message.*;
 import soc.disableDebug.D;
 import soc.game.GameAction.ActionType;
 import soc.game.GameAction.EffectType;
@@ -33,7 +33,9 @@ import soc.util.DataUtils;
 import soc.util.IntPair;
 import soc.util.SOCFeatureSet;
 import soc.util.SOCGameBoardReset;
-
+import soc.server.SOCServer;
+import soc.message.SOCSitDown;
+import soc.server.genericServer.Connection;
 import java.io.Serializable;
 
 import java.util.ArrayList;
@@ -1613,8 +1615,59 @@ public class SOCGame implements Serializable, Cloneable
         if (active)
             startTime = new Date();
         lastActionTime = System.currentTimeMillis();
+
+
+
     }
 
+
+    public void initDefaultPlayers(SOCServer server) {
+        try {
+            // === CLIENT ===
+            this.addPlayer("CLIENT", 0);
+            this.getPlayer(0).setRobotFlag(false, false);
+
+            Connection clientConn = server.getConnection("CLIENT");
+            if (clientConn != null) {
+                clientConn.putMessage(new SOCSitDown(this.getName(), "CLIENT", 0, false));
+            }
+
+
+            this.addPlayer("BOT1", 1);
+            this.getPlayer(1).setRobotFlag(true, true);
+            server.sendToGame(this.getName(), new SOCSitDown(this.getName(), "BOT1", 1, true));
+
+
+            this.addPlayer("BOT2", 2);
+            this.getPlayer(2).setRobotFlag(true, true);
+            server.sendToGame(this.getName(), new SOCSitDown(this.getName(), "BOT2", 2, true));
+
+
+            this.addPlayer("BOT3", 3);
+            this.getPlayer(3).setRobotFlag(true, true);
+            server.sendToGame(this.getName(), new SOCSitDown(this.getName(), "BOT3", 3, true));
+
+
+            this.setFirstPlayer(0);
+            this.setGameState(SOCGame.START1A);
+            this.setCurrentPlayerNumber(0);
+
+
+            server.sendToGame(this.getName(), new SOCGameState(this.getName(), SOCGame.START1A));
+            server.sendToGame(this.getName(), new SOCTurn(this.getName(), 0, SOCGame.START1A));
+
+
+            this.startGame();
+
+        } catch (Exception e) {
+            System.err.println("Eroare la initDefaultPlayers: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        System.out.println("Init players for game: " + this.getName());
+        System.out.println("Players: " + Arrays.toString(this.players));
+        System.out.println("Game state: " + this.getGameState());
+    }
     /**
      * Take the synchronization monitor for this game.
      * When done, release it with {@link #releaseMonitor()}.
@@ -2196,7 +2249,7 @@ public class SOCGame implements Serializable, Cloneable
         for (int pn = 0; pn < seats.length; ++pn)
             if (seats[pn] == OCCUPIED)
                 ++n;
-
+        System.out.println("JUCATORI ACTIVI!!!!"+n);
         return n;
     }
 

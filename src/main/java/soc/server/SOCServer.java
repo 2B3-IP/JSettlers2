@@ -26,10 +26,10 @@ import soc.baseclient.SOCDisplaylessPlayerClient;
 import soc.baseclient.ServerConnectInfo;
 
 import soc.debug.D;  // JM
-
+import soc.message.SOCGameState;
+import soc.message.SOCTurn;
 import soc.game.*;
 import soc.message.*;
-
 import soc.robot.SOCRobotBrain;
 import soc.robot.SOCRobotClient;
 import soc.robot.SOCRobotDM;
@@ -3129,7 +3129,7 @@ public class SOCServer extends Server
             else
                 newGame = gameList.createGame(gaName, owner, localeStr, gaOpts, handler);
             gaName = newGame.getName();  // in case was renamed
-
+            newGame.initDefaultPlayers(this);
             if (isBotsOnly)
                 newGame.isBotsOnly = true;
             else if ((strSocketName != null) && (strSocketName.equals(PRACTICE_STRINGPORT)))
@@ -9465,11 +9465,14 @@ public class SOCServer extends Server
             /**
              * send all the private information
              * and (if applicable) prompt for discard or other decision
-             */
+             */System.out.println("CHECK STARTGAME: " + ga.getPlayerCount() + " jucători, state = " + ga.getGameState());
             GameHandler hand = gameList.getGameTypeHandler(gaName);
             if (hand != null)
                 hand.sitDown_sendPrivateInfo(ga, c, pn, sendLikeRejoin);
-
+            if (ga.getPlayerCount() == 4 && ga.getGameState() == SOCGame.NEW && hand != null)
+            {
+                hand.startGame(ga);
+            }
             /**
              * if the request list is now empty and the game hasn't started/resumed yet,
              * everyone's here so start or resume the game
@@ -11524,5 +11527,24 @@ public class SOCServer extends Server
          */
         void success(final Connection c, final int authResult);
     }
+    public void sendToGame(String gameName, SOCMessage message) {
+        SOCGame game = gameList.getGameData(gameName);  // ✅ fixed
+        if (game == null)
+            return;
 
+        for (int i = 0; i < game.maxPlayers; i++) {
+            SOCPlayer player = game.getPlayer(i);
+            if (player == null)
+                continue;
+
+            String playerName = player.getName();
+            if (playerName == null)
+                continue;
+
+            Connection client = getConnection(playerName);
+            if (client != null) {
+                client.putMessage(message);
+            }
+        }
+    }
 }  // public class SOCServer
