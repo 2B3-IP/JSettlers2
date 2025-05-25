@@ -1,6 +1,7 @@
 package soc.ip;
 
 import soc.util.Pair;
+
 import java.util.*;
 
 public class CoordBridge {
