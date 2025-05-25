@@ -145,7 +145,7 @@ public class MessageHandler
                 gaName = null;
                 ga = null;
             }
-
+            System.out.println(mes.getType() + ": " + mes.toString());
             switch (mes.getType())
             {
 
@@ -405,6 +405,7 @@ public class MessageHandler
              * a player built something
              */
             case SOCMessage.PUTPIECE:
+                System.out.println("PUTPIECE: " + mes.toString());
                 handlePUTPIECE((SOCPutPiece) mes);
                 break;
 

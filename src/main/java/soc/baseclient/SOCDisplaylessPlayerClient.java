@@ -694,7 +694,7 @@ public class SOCDisplaylessPlayerClient implements Runnable {
                     break;
 
                 /**
-                 * a player built something
+                 * a player built somethingH
                  */
                 case SOCMessage.PUTPIECE: {
                     final SOCPutPiece ppm = (SOCPutPiece) mes;

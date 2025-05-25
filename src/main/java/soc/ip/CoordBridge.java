@@ -1,15 +1,41 @@
 package soc.ip;
 
-import soc.util.Pair;
 
 import java.util.*;
+
+ class Point<A, B> {
+    private A a;
+    private B b;
+
+    public Point(A a, B b) {
+        this.a = a;
+        this.b = b;
+    }
+
+    public A getA() { return a; }
+    public B getB() { return b; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Point)) return false;
+        Point<?, ?> Point = (Point<?, ?>) o;
+        return Objects.equals(a, Point.a) && Objects.equals(b, Point.b);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(a, b);
+    }
+}
+
 
 public class CoordBridge {
 
     public static int[] addV = {0x01, 0x12, 0x21, 0x10, -0x01, -0x10};
 
-    public static HashMap<Pair<Integer, Integer>, Integer> backToAiCode = new HashMap<>();
-    public static HashMap<Integer, Pair<Integer, Integer>> aiCodeToBack = new HashMap<>();
+    public static HashMap<Point<Integer, Integer>, Integer> backToAiCode = new HashMap<>();
+    public static HashMap<Integer, Point<Integer, Integer>> aiCodeToBack = new HashMap<>();
     private static final Map<Integer, String> edgeToCoords = new HashMap<>();
 
     private static final int[][] HEXES = {
@@ -34,7 +60,7 @@ public class CoordBridge {
             int y = HEXES[i][1];
             int base = baseCodes[i];
 
-            Pair<Integer, Integer> pos = new Pair<>(x, y);
+            Point<Integer, Integer> pos = new Point<>(x, y);
             backToAiCode.put(pos, base);
             aiCodeToBack.put(base, pos);
 
@@ -60,9 +86,9 @@ public class CoordBridge {
     }
 
     public static String getVertex(int code) {
-        for (Map.Entry<Integer, Pair<Integer, Integer>> e : aiCodeToBack.entrySet()) {
+        for (Map.Entry<Integer, Point<Integer, Integer>> e : aiCodeToBack.entrySet()) {
             int base = e.getKey();
-            Pair<Integer, Integer> pos = e.getValue();
+            Point<Integer, Integer> pos = e.getValue();
             for (int i = 0; i < addV.length; i++) {
                 if (base + addV[i] == code) {
                     return pos.getA() + " " + pos.getB() + " " + i;
@@ -70,6 +96,10 @@ public class CoordBridge {
             }
         }
         return "ERROR";
+    }
+
+    public static int getVertex(int x, int y, int d) {
+        return backToAiCode.get(new Point<>(x, y)) + addV[d];
     }
 
     public static String getEdge(int code) {
