@@ -260,8 +260,6 @@ import soc.util.Version;
         if (client == null)
             throw new IllegalArgumentException("client is null");
 
-        // start Unity printer: connect, read lines, print them, and retry on failure
-        new Thread(new UnityPrintTask("localhost", 6868, client), "unity-reader").start();
     }
 
     /**
@@ -868,68 +866,6 @@ import soc.util.Version;
     } // nested class LocalStringReaderTask
 
     // Simple task: connect to Unity, read and print each line, retry on error
-    static class UnityPrintTask implements Runnable {
-        private final String host;
-        private final int port;
-        private final SOCPlayerClient client;
-        MessageHandler handler;
-        String ga = "HardcodedGame";
 
-        public UnityPrintTask(String host, int port, SOCPlayerClient client) {
-            this.host = host;
-            this.port = port;
-            this.client = client;
-        }
-
-        @Override
-        public void run() {
-
-            try {
-                while (true) {
-                    try (Socket sock = new Socket(host, port);
-                         BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()))) {
-                        String line;
-
-                        while ((line = in.readLine()) != null) {
-                            String[] parts = line.split(" ");
-                            String keyword = parts[0];
-
-                            switch (keyword) {
-                                case "BUILD":
-                                    handleBuild(parts[1],
-                                            Integer.valueOf(parts[2]),
-                                            Integer.valueOf(parts[3]),
-                                            Integer.valueOf(parts[4]));
-                                    break;
-                            }
-                        }
-
-                    } catch (IOException e) {
-                        // wait before retrying
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ignored) {
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("Error: " + e);
-            }
-        }
-
-        void handleBuild(String type, int x, int y, int pos) {
-            handler = client.getMessageHandler();
-            handler.init(client);
-
-            pos = (pos + 2) % 6; // the orientation of the board is different in the backend
-            int code = CoordBridge.getVertex(x, y, pos);
-
-            handler.handle(new SOCPutPiece(ga, 0, 1, code), true);
-//            handler.handle(new SOCPutPiece(ga, 0, 0, code), true);
-//            handler.handle(new SOCEndTurn(ga), true);
-
-
-        }
-    }
 
 }
