@@ -145,7 +145,6 @@ public class MessageHandler
                 gaName = null;
                 ga = null;
             }
-
             switch (mes.getType())
             {
 

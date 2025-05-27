@@ -805,15 +805,6 @@ import javax.swing.SwingConstants;
 
         if (e.getSource() == gameOptsBut)
         {
-            if ((ngof != null) && ngof.isVisible())
-            {
-                ngof.setVisible(true);  // method override also requests topmost/focus
-            } else {
-                ngof = NewGameOptionsFrame.createAndShow
-                    (pi, pi.getMainDisplay(), game.getName(), game.getGameOptions(), false, true);
-                ngof.addWindowListener(this);  // drop ngof reference when window is closed
-            }
-
             return;
         }
         if (e.getSource() == statsBut)
