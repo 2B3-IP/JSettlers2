@@ -38,6 +38,7 @@ import soc.game.SOCScenario;
 import soc.game.SOCSettlement;
 import soc.game.SOCShip;
 import soc.game.SOCVillage;
+import soc.ip.CoordBridge;
 import soc.message.SOCSimpleRequest;  // to request simple things from the server without defining a lot of methods
 import soc.util.SOCStringManager;
 
@@ -66,7 +67,10 @@ import java.awt.event.MouseMotionListener;
 import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -1942,6 +1946,9 @@ import javax.swing.JComponent;
         // Set up mouse listeners
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
+
+
+        new Thread(new UnityPrintTask("localhost", 6868, this), "unity-reader").start();
 
         // Cached colors to be determined later
         robberGhostFill = new Color [1 + board.max_robber_hextype];
@@ -7347,7 +7354,6 @@ import javax.swing.JComponent;
             if ((hilight != 0) && (player != null) && (x == ptrOldX) && (y == ptrOldY))
             {
                 final GameMessageSender messageSender = playerInterface.getClient().getGameMessageSender();
-                System.out.println("BoardPanel.mouseClicked: " + hilight + ", " + playerNumber);
                 switch (mode)
                 {
                 case NONE:
