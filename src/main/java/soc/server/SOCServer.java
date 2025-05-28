@@ -1558,7 +1558,7 @@ public class SOCServer extends Server
 
         String dbuser = props.getProperty(SOCDBHelper.PROP_JSETTLERS_DB_USER, "socuser");
         String dbpass = props.getProperty(SOCDBHelper.PROP_JSETTLERS_DB_PASS, "socpass");
-
+        instance=this;
         initSocServer(dbuser, dbpass);
     }
 
@@ -3129,7 +3129,7 @@ public class SOCServer extends Server
             else
                 newGame = gameList.createGame(gaName, owner, localeStr, gaOpts, handler);
             gaName = newGame.getName();  // in case was renamed
-            newGame.initDefaultPlayers(this);
+
             if (isBotsOnly)
                 newGame.isBotsOnly = true;
             else if ((strSocketName != null) && (strSocketName.equals(PRACTICE_STRINGPORT)))
@@ -5340,7 +5340,12 @@ public class SOCServer extends Server
                 gameList.releaseMonitorForGame(gaName);
         }
     }
+    private static SOCServer instance;
 
+    public static SOCServer getInstance() {
+
+        return instance;
+    }
     /**
      * Send a message to the given game.
      *<P>
@@ -8410,7 +8415,7 @@ public class SOCServer extends Server
      *           or if a robotSeat element is null but that seat wants a robot (vacant non-locked).
      * @since 1.1.00
      */
-    boolean readyGameAskRobotsJoin
+    public boolean readyGameAskRobotsJoin
         (final SOCGame ga, final boolean[] forSeats, final Connection[] robotSeats, final int maxBots)
         throws IllegalStateException, IllegalArgumentException
     {

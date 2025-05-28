@@ -765,7 +765,9 @@ public class SOCPlayerClient
             tcpServGameOpts.scenKeys.add(scKey);  // don't ask again later
         }
     }
-
+    public String getNickname() {
+        return nickname;
+    }
     /**
      * Localize {@link SOCScenario} names and descriptions with strings from the server.
      * Updates scenario data in {@link #practiceServGameOpts} or {@link #tcpServGameOpts}:

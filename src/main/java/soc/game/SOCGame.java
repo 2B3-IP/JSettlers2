@@ -332,7 +332,7 @@ public class SOCGame implements Serializable, Cloneable
      * @see #moveRobber(int, int)
      */
     public static final int PLACING_ROBBER = 33;
-
+    private SOCServer server;
     /**
      * Player is placing the pirate ship on a new water hex,
      * in a game which {@link #hasSeaBoard}.
@@ -1615,63 +1615,57 @@ public class SOCGame implements Serializable, Cloneable
         if (active)
             startTime = new Date();
         lastActionTime = System.currentTimeMillis();
+        this.addPlayer("Player", 0);  // CLIENT player
+        this.getPlayer(0).setRobotFlag(false, false);
 
 
 
     }
 
 
-    public void initDefaultPlayers(SOCServer server) {
-        try {
-            // === CLIENT ===
-            this.addPlayer("CLIENT", 0);
-            this.getPlayer(0).setRobotFlag(false, false);
+    public void setServer(SOCServer server) {
+        this.server = server;
+    }
 
-            Connection clientConn = server.getConnection("CLIENT");
-            if (clientConn != null) {
-                clientConn.putMessage(new SOCSitDown(this.getName(), "CLIENT", 0, false));
+    public void startWithRobots()
+    {
+        System.out.println("⚙️ startWithRobots() called");
+
+        boolean[] vacantSeats = new boolean[maxPlayers];
+        int vacantCount = 0;
+
+        for (int i = 0; i < maxPlayers; i++) {
+            if (this.isSeatVacant(i)) {
+                vacantSeats[i] = true;
+                vacantCount++;
+            } else {
+                vacantSeats[i] = false;
             }
-
-
-            this.addPlayer("BOT1", 1);
-            this.getPlayer(1).setRobotFlag(true, true);
-            server.sendToGame(this.getName(), new SOCSitDown(this.getName(), "BOT1", 1, true));
-
-
-            this.addPlayer("BOT2", 2);
-            this.getPlayer(2).setRobotFlag(true, true);
-            server.sendToGame(this.getName(), new SOCSitDown(this.getName(), "BOT2", 2, true));
-
-
-            this.addPlayer("BOT3", 3);
-            this.getPlayer(3).setRobotFlag(true, true);
-            server.sendToGame(this.getName(), new SOCSitDown(this.getName(), "BOT3", 3, true));
-
-
-            this.setFirstPlayer(0);
-            this.setGameState(SOCGame.START1A);
-            this.setCurrentPlayerNumber(0);
-
-
-            server.sendToGame(this.getName(), new SOCGameState(this.getName(), SOCGame.START1A));
-            server.sendToGame(this.getName(), new SOCTurn(this.getName(), 0, SOCGame.START1A));
-
-
-            this.startGame();
-
-        } catch (Exception e) {
-            System.err.println("Eroare la initDefaultPlayers: " + e.getMessage());
-            e.printStackTrace();
         }
 
-        System.out.println("Init players for game: " + this.getName());
-        System.out.println("Players: " + Arrays.toString(this.players));
-        System.out.println("Game state: " + this.getGameState());
+        System.out.println("👤 Seats vacant: " + vacantCount);
+
+        try {
+            // trimite cerere către SOCServer să adauge boți în locurile libere
+            boolean robotsAdded = server.readyGameAskRobotsJoin(this, vacantSeats, null, maxPlayers - 1);
+            System.out.println("🤖 Robots requested: " + robotsAdded);
+
+            // opțional: pornește jocul după ce boții sunt adăugați
+            if (robotsAdded) {
+                  // dacă nu o setezi deja înainte
+                this.startGame();
+                System.out.println("✅ Game started");
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Failed to add robots or start game: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
-    /**
-     * Take the synchronization monitor for this game.
-     * When done, release it with {@link #releaseMonitor()}.
-     */
+
+    public SOCServer getServer() {
+        return server;
+    }
+
     public synchronized void takeMonitor()
     {
         //D.ebugPrintln("TAKE MONITOR");

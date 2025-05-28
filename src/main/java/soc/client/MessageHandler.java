@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import soc.server.SOCServer;
 
 import soc.baseclient.SOCDisplaylessPlayerClient;
 import soc.disableDebug.D;
@@ -1303,7 +1304,36 @@ public class MessageHandler
         }
 
         SOCGame ga = new SOCGame(gaName, gameOpts, knownOpts);
+        // Auto-start game if it's the hardcoded one and we're in practice mode
+        if ("HardcodedGame".equals(ga.getName())) {
+            System.out.println(">> Auto-starting HardcodedGame with bots...");
 
+            try {
+                soc.server.SOCServer practiceSrv = client.getNet().practiceServer;
+                soc.server.SOCGameListAtServer gameList = (soc.server.SOCGameListAtServer) practiceSrv.getGameList();
+                soc.game.SOCGame game = gameList.getGameData("HardcodedGame");
+
+                if (game != null) {
+                    game.setGameState(soc.game.SOCGame.READY);
+
+                    // Fill empty seats with bots
+                    boolean ok = practiceSrv.readyGameAskRobotsJoin(game, null, null, 3);
+                    System.out.println(">> Bots joined: " + ok);
+
+                    // Start the game
+                    soc.server.GameHandler handler = gameList.getGameTypeHandler("HardcodedGame");
+                    if (handler != null)
+                        handler.startGame(game);
+                    else
+                        System.err.println("!! No handler for HardcodedGame");
+                } else {
+                    System.err.println("!! Game not found: HardcodedGame");
+                }
+            } catch (Exception e) {
+                System.err.println("!! Auto-start failed: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
         if (ga != null)
         {
             ga.isPractice = isPractice;

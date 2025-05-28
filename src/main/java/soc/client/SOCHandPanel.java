@@ -1243,6 +1243,7 @@ import javax.swing.UIManager;
 
         // set the starting state of the panel
         removePlayer();
+
     }
 
     /** Color square label created by most recent call to {@link #createAndAddResourceColorSquare(Color, String)}. */
@@ -2111,13 +2112,24 @@ import javax.swing.UIManager;
      * @see #renameSitButLock()
      */
     public void addSitButton(boolean clientHasSatAlready)
-    {
+    {System.out.println("addSitButton called: clientHasSatAlready = " + clientHasSatAlready + ", playerIsClient = " + playerIsClient);
+        if (!clientHasSatAlready && playerIsClient) {
+
+            for (int i = 0; i < SOCGame.MAXPLAYERS; i++) {
+                if (game.isSeatVacant(i)) {
+                    messageSender.sitDown(game, i);
+                    break;
+                }
+            }
+            return;
+        }
+
         if (! clientHasSatAlready)
         {
             if (game.getGameState() >= SOCGame.START2A)
             {
                 sitBut.setVisible(false);
-                return;  // <--- Early return ---
+                return;
             }
 
             if (sitButIsLock)
@@ -2127,13 +2139,12 @@ import javax.swing.UIManager;
             }
         }
         else if (clientHasSatAlready && ! sitButIsLock)
-        {
+        {System.out.println("addSitButton called: clientHasSatAlready = " + clientHasSatAlready + ", playerIsClient = " + playerIsClient);
             renameSitButLock();
         }
 
         sitBut.setVisible(true);
     }
-
     /**
      * DOCUMENT ME!
      */
@@ -2437,7 +2448,15 @@ import javax.swing.UIManager;
      * @see #removePlayer()
      */
     public void addPlayer(String name)
+    {if (name.equals("Player"))  // temporar hardcode pentru test
     {
+        playerIsClient = true;
+        playerInterface.setClientHand(this);
+        System.out.println("CLIENT player added with name: " + name);
+        System.out.println("playerIsClient: " + playerIsClient);
+        System.out.println("Game state: " + game.getGameState());
+        System.out.println("Current player number: " + game.getCurrentPlayerNumber());
+    }
         // hide temporarily to avoid flicker
         if (blankStandIn != null)
             blankStandIn.setVisible(true);

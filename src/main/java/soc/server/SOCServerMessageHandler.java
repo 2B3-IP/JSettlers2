@@ -2843,7 +2843,20 @@ public class SOCServerMessageHandler
         ga.takeMonitor();
 
         try
+        {if ("HardcodedGame".equals(gn) && ga.getGameState() == SOCGame.NEW)
         {
+            // Set game state to READY to allow bots
+            ga.setGameState(SOCGame.READY);
+
+            try {
+                boolean botsJoined = srv.readyGameAskRobotsJoin(ga, null, null, 3);
+                System.out.println("✅ Bots join triggered for HardcodedGame: " + botsJoined);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("❌ Failed to trigger bots for HardcodedGame");
+            }
+        }
             if (ga.getGameState() == SOCGame.NEW)
             {
                 boolean allowStart = true;
