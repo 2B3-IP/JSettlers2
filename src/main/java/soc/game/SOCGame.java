@@ -1647,8 +1647,9 @@ public class SOCGame implements Serializable, Cloneable
 
         try {
             // trimite cerere către SOCServer să adauge boți în locurile libere
-            boolean robotsAdded = server.readyGameAskRobotsJoin(this, vacantSeats, null, maxPlayers - 1);
+            boolean robotsAdded = server.readyGameAskRobotsJoin(this, vacantSeats, null, 0);
             System.out.println("🤖 Robots requested: " + robotsAdded);
+
 
             // opțional: pornește jocul după ce boții sunt adăugați
             if (robotsAdded) {
@@ -2243,7 +2244,6 @@ public class SOCGame implements Serializable, Cloneable
         for (int pn = 0; pn < seats.length; ++pn)
             if (seats[pn] == OCCUPIED)
                 ++n;
-        System.out.println("JUCATORI ACTIVI!!!!"+n);
         return n;
     }
 

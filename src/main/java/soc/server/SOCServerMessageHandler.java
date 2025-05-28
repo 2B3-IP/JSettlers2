@@ -2843,20 +2843,8 @@ public class SOCServerMessageHandler
         ga.takeMonitor();
 
         try
-        {if ("HardcodedGame".equals(gn) && ga.getGameState() == SOCGame.NEW)
         {
-            // Set game state to READY to allow bots
-            ga.setGameState(SOCGame.READY);
 
-            try {
-                boolean botsJoined = srv.readyGameAskRobotsJoin(ga, null, null, 3);
-                System.out.println("✅ Bots join triggered for HardcodedGame: " + botsJoined);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println("❌ Failed to trigger bots for HardcodedGame");
-            }
-        }
             if (ga.getGameState() == SOCGame.NEW)
             {
                 boolean allowStart = true;
@@ -2934,8 +2922,8 @@ public class SOCServerMessageHandler
                     final int numBots = srv.getRobotCount();
                     if (numBots == 0)
                     {
-                        if (numPlayers < SOCGame.MINPLAYERS)
-                            srv.messageToGameKeyed(ga, true, true, "start.no.robots.on.server", SOCGame.MINPLAYERS);
+                        if (numPlayers < 4)
+                            srv.messageToGameKeyed(ga, true, true, "start.no.robots.on.server", 4);
                                 // "No robots on this server, please fill at least {0} seats before starting."
                         else
                             seatsFull = true;  // Enough players to start game.

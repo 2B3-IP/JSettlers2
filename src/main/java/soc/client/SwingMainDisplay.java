@@ -551,7 +551,7 @@ public class SwingMainDisplay extends JPanel implements MainDisplay
     public SwingMainDisplay
         (boolean hasConnectOrPractice, final SOCPlayerClient client, final int displayScaleFactor)
         throws IllegalArgumentException
-    {System.out.println("!!! sunt aiciii");
+    {
         if (client == null)
             throw new IllegalArgumentException("null client");
         if (displayScaleFactor < 1)
