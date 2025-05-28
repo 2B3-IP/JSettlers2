@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
-
+import soc.UnityBridge;//
 import soc.debug.D;
 import soc.game.GameAction;
 import soc.game.ResourceSet;
@@ -131,254 +131,188 @@ public class SOCGameMessageHandler
         /**
          * someone put a piece on the board
          */
-        case SOCMessage.PUTPIECE:
+            case SOCMessage.PUTPIECE:
+    SOCPutPiece pp = (SOCPutPiece) message;
+    int coord = pp.getCoordinates();
+    int pieceType = pp.getPieceType();
 
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handlePUTPIECE(game, connection, (SOCPutPiece) message);
+    int x = CoordBridge.getX(coord);
+    int y = CoordBridge.getY(coord);
+    int pos = CoordBridge.getVertexDirection(coord);  // pentru așezări / orașe
+    int edge = CoordBridge.getEdgeDirection(coord);   // pentru drumuri
 
-            //ga = (SOCGame)gamesData.get(((SOCPutPiece)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCPutPiece)mes).getGame());
+    switch (pieceType) {
+        case SOCPlayingPiece.SETTLEMENT:
+            UnityBridge.sendBuildSettlement(x, y, pos);
             break;
+        case SOCPlayingPiece.CITY:
+            UnityBridge.sendBuildCity(x, y, pos);
+            break;
+        case SOCPlayingPiece.ROAD:
+            UnityBridge.sendBuildRoad(x, y, edge);
+            break;
+    }
+    break;
 
         /**
          * a player is moving the robber or pirate
          */
-        case SOCMessage.MOVEROBBER:
+            case SOCMessage.MOVEROBBER:
+    SOCMoveRobber mr = (SOCMoveRobber) message;
+    int coord = mr.getCoordinates();
 
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleMOVEROBBER(game, connection, (SOCMoveRobber) message);
+    // Doar pentru tâlhar, ignorăm pirații (negativ sau 0)
+    if (coord > 0) {
+        int x = CoordBridge.getX(coord);
+        int y = CoordBridge.getY(coord);
+        UnityBridge.sendMoveRobber(x, y);
+    }
+    break;
 
-            //ga = (SOCGame)gamesData.get(((SOCMoveRobber)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCMoveRobber)mes).getGame());
-            break;
+            case SOCMessage.DICERESULT:
+                SOCDiceResult dr = (SOCDiceResult) message;
+                int diceSum = dr.getResult();
+                if (diceSum >= 2 && diceSum <= 12)  // opțional: evită cazul -1 (reset)
+                 UnityBridge.sendDiceRoll(diceSum);
+                break;
 
-        case SOCMessage.ROLLDICE:
+            case SOCMessage.DISCARD:
+    SOCDiscard sd = (SOCDiscard) message;
+    ResourceSet rs = sd.getResources();
 
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleROLLDICE(game, connection, (SOCRollDice) message);
+    // Transformăm ResourceSet în int[] (doar 5 resurse, fără UNKNOWN)
+    int[] resources = new int[] {
+        rs.getAmount(SOCResourceConstants.CLAY),
+        rs.getAmount(SOCResourceConstants.ORE),
+        rs.getAmount(SOCResourceConstants.SHEEP),
+        rs.getAmount(SOCResourceConstants.WHEAT),
+        rs.getAmount(SOCResourceConstants.WOOD)
+    };
 
-            //ga = (SOCGame)gamesData.get(((SOCRollDice)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCRollDice)mes).getGame());
-            break;
+    UnityBridge.sendDiscard(resources);
+    break;
 
-        case SOCMessage.DISCARD:
+            case SOCMessage.ENDTURN:
+                SOCEndTurn et = (SOCEndTurn) message;
+                handleENDTURN(game, connection, et);
+                UnityBridge.sendEndTurn();
+                break;
 
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleDISCARD(game, connection, (SOCDiscard) message);
+            case SOCMessage.CHOOSEPLAYER:
+                SOCChoosePlayer cp = (SOCChoosePlayer) message;
+                handleCHOOSEPLAYER(game, connection, cp);
+                UnityBridge.sendChoosePlayer(cp.getPlayer());
+                break;
 
-            //ga = (SOCGame)gamesData.get(((SOCDiscard)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCDiscard)mes).getGame());
-            break;
+            case SOCMessage.MAKEOFFER:
+                SOCMakeOffer mo = (SOCMakeOffer) message;
+                handleMAKEOFFER(game, connection, mo);
+                UnityBridge.sendMakeOffer(mo.getResources());
+                break;
+            case SOCMessage.CLEAROFFER:
+                SOCClearOffer co = (SOCClearOffer) message;
+                handleCLEAROFFER(game, connection, co);
+                UnityBridge.sendClearOffer();
+                break;
 
-        case SOCMessage.ENDTURN:
+            case SOCMessage.REJECTOFFER:
+                SOCRejectOffer ro = (SOCRejectOffer) message;
+                handleREJECTOFFER(game, connection, ro);
+                UnityBridge.sendRejectOffer();
+                break;
 
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleENDTURN(game, connection, (SOCEndTurn) message);
+            case SOCMessage.ACCEPTOFFER:
+                SOCAcceptOffer ao = (SOCAcceptOffer) message;
+                handleACCEPTOFFER(game, connection, ao);
+                UnityBridge.sendAcceptOffer();
+                break;
+            case SOCMessage.BANKTRADE:
+                SOCBankTrade bt = (SOCBankTrade) message;
+                handleBANKTRADE(game, connection, bt);
+                UnityBridge.sendBankTrade(bt.getGiveType(), bt.getReceiveType());
+                break;
 
-            //ga = (SOCGame)gamesData.get(((SOCEndTurn)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCEndTurn)mes).getGame());
-            break;
+            case SOCMessage.BUILDREQUEST:
+                SOCBuildRequest br = (SOCBuildRequest) message;
+                handleBUILDREQUEST(game, connection, br);
+                UnityBridge.sendBuildRequest(br.getPieceType());
+                break;
 
-        case SOCMessage.CHOOSEPLAYER:
+            case SOCMessage.CANCELBUILDREQUEST:
+                SOCCancelBuildRequest cbr = (SOCCancelBuildRequest) message;
+                handleCANCELBUILDREQUEST(game, connection, cbr);
+                UnityBridge.sendCancelBuildRequest();
+                break;
 
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleCHOOSEPLAYER(game, connection, (SOCChoosePlayer) message);
+            case SOCMessage.BUYDEVCARDREQUEST:
+                SOCBuyDevCardRequest bd = (SOCBuyDevCardRequest) message;
+                handleBUYDEVCARDREQUEST(game, connection, bd);
+                UnityBridge.sendBuyDevCard();
+                break;
 
-            //ga = (SOCGame)gamesData.get(((SOCChoosePlayer)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCChoosePlayer)mes).getGame());
-            break;
+            case SOCMessage.PLAYDEVCARDREQUEST:
+                SOCPlayDevCardRequest pd = (SOCPlayDevCardRequest) message;
+                handlePLAYDEVCARDREQUEST(game, connection, pd);
+                UnityBridge.sendPlayDevCard();
+                break;
 
-        case SOCMessage.MAKEOFFER:
+            case SOCMessage.PICKRESOURCES:
+                SOCPickResources pr = (SOCPickResources) message;
+                handlePICKRESOURCES(game, connection, pr);
+                UnityBridge.sendPickResources(pr.getResources());
+                break;
 
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleMAKEOFFER(game, connection, (SOCMakeOffer) message);
+            case SOCMessage.PICKRESOURCETYPE:
+                SOCPickResourceType prt = (SOCPickResourceType) message;
+                handlePICKRESOURCETYPE(game, connection, prt);
+                UnityBridge.sendPickResourceType(prt.getResourceType());
+                break;
 
-            //ga = (SOCGame)gamesData.get(((SOCMakeOffer)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCMakeOffer)mes).getGame());
-            break;
+            case SOCMessage.DEBUGFREEPLACE:
+                SOCDebugFreePlace dfp = (SOCDebugFreePlace) message;
+                handleDEBUGFREEPLACE(game, connection, dfp);
+                UnityBridge.sendDebugFreePlace(dfp.getX(), dfp.getY());
+                break;
 
-        case SOCMessage.CLEAROFFER:
+            case SOCMessage.SIMPLEREQUEST:
+                SOCSimpleRequest sr = (SOCSimpleRequest) message;
+                handleSIMPLEREQUEST(game, connection, sr);
+                UnityBridge.sendSimpleRequest(sr.getRequestType());
+                break;
 
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleCLEAROFFER(game, connection, (SOCClearOffer) message);
+            case SOCMessage.INVENTORYITEMACTION:
+                SOCInventoryItemAction ia = (SOCInventoryItemAction) message;
+                handleINVENTORYITEMACTION(game, connection, ia);
+                UnityBridge.sendInventoryAction(ia.getItemId(), ia.isAddAction());
+                break;
 
-            //ga = (SOCGame)gamesData.get(((SOCClearOffer)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCClearOffer)mes).getGame());
-            break;
+            case SOCMessage.MOVEPIECE:
+                SOCMovePiece mp = (SOCMovePiece) message;
+                handleMOVEPIECE(game, connection, mp);
+                UnityBridge.sendMovePiece(mp.getX(), mp.getY());
+                break;
 
-        case SOCMessage.REJECTOFFER:
+            case SOCMessage.SETSPECIALITEM:
+                SOCSetSpecialItem si = (SOCSetSpecialItem) message;
+                handleSETSPECIALITEM(game, connection, si);
+                UnityBridge.sendSpecialItem(si.getItemId());
+                break;
 
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleREJECTOFFER(game, connection, (SOCRejectOffer) message);
+            case SOCMessage.GAMESTATS:
+                handleGAMESTATS(game, connection, (SOCGameStats) message);
+                UnityBridge.sendGameStats();
+                break;
 
-            //ga = (SOCGame)gamesData.get(((SOCRejectOffer)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCRejectOffer)mes).getGame());
-            break;
+            case SOCMessage.UNDOPUTPIECE:
+                SOCUndoPutPiece up = (SOCUndoPutPiece) message;
+                handleUNDOPUTPIECE(game, connection, up);
+                UnityBridge.sendUndoPutPiece(up.getX(), up.getY(), up.getLocation());
+                break;
 
-        case SOCMessage.ACCEPTOFFER:
 
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleACCEPTOFFER(game, connection, (SOCAcceptOffer) message);
-
-            //ga = (SOCGame)gamesData.get(((SOCAcceptOffer)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCAcceptOffer)mes).getGame());
-            break;
-
-        case SOCMessage.BANKTRADE:
-
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleBANKTRADE(game, connection, (SOCBankTrade) message);
-
-            //ga = (SOCGame)gamesData.get(((SOCBankTrade)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCBankTrade)mes).getGame());
-            break;
-
-        case SOCMessage.BUILDREQUEST:
-
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleBUILDREQUEST(game, connection, (SOCBuildRequest) message);
-
-            //ga = (SOCGame)gamesData.get(((SOCBuildRequest)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCBuildRequest)mes).getGame());
-            break;
-
-        case SOCMessage.CANCELBUILDREQUEST:
-
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleCANCELBUILDREQUEST(game, connection, (SOCCancelBuildRequest) message);
-
-            //ga = (SOCGame)gamesData.get(((SOCCancelBuildRequest)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCCancelBuildRequest)mes).getGame());
-            break;
-
-        case SOCMessage.BUYDEVCARDREQUEST:
-
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handleBUYDEVCARDREQUEST(game, connection, (SOCBuyDevCardRequest) message);
-
-            //ga = (SOCGame)gamesData.get(((SOCBuyDevCardRequest)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCBuyDevCardRequest)mes).getGame());
-            break;
-
-        case SOCMessage.PLAYDEVCARDREQUEST:
-
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handlePLAYDEVCARDREQUEST(game, connection, (SOCPlayDevCardRequest) message);
-
-            //ga = (SOCGame)gamesData.get(((SOCPlayDevCardRequest)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCPlayDevCardRequest)mes).getGame());
-            break;
-
-        case SOCMessage.PICKRESOURCES:  // Discovery / Year of Plenty / Gold Hex resource picks
-
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handlePICKRESOURCES(game, connection, (SOCPickResources) message);
-
-            //ga = (SOCGame)gamesData.get(((SOCPickResources)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCPickResources)mes).getGame());
-            break;
-
-        case SOCMessage.PICKRESOURCETYPE:  // Resource Type / Monopoly pick
-
-            //createNewGameEventRecord();
-            //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
-            handlePICKRESOURCETYPE(game, connection, (SOCPickResourceType) message);
-
-            //ga = (SOCGame)gamesData.get(((SOCPickResourceType)mes).getGame());
-            //currentGameEventRecord.setSnapshot(ga);
-            //saveCurrentGameEventRecord(((SOCPickResourceType)mes).getGame());
-            break;
-
-        /**
-         * debug piece Free Placement (as of 20110104 (v 1.1.12))
-         */
-        case SOCMessage.DEBUGFREEPLACE:
-            handleDEBUGFREEPLACE(game, connection, (SOCDebugFreePlace) message);
-            break;
-
-        /**
-         * Generic simple request from a player.
-         * Added 2013-02-17 for v1.1.18.
-         */
-        case SOCMessage.SIMPLEREQUEST:
-            handleSIMPLEREQUEST(game, connection, (SOCSimpleRequest) message);
-            break;
-
-        /**
-         * Special inventory item action (play request) from a player.
-         * Added 2013-11-28 for v2.0.00.
-         */
-        case SOCMessage.INVENTORYITEMACTION:
-            handleINVENTORYITEMACTION(game, connection, (SOCInventoryItemAction) message);
-            break;
-
-        /**
-         * Asking to move a previous piece (a ship) somewhere else on the board.
-         * Added 2011-12-04 for v2.0.00.
-         */
-        case SOCMessage.MOVEPIECE:
-            handleMOVEPIECE(game, connection, (SOCMovePiece) message);
-            break;
-
-        /**
-         * Special Item requests.
-         * Added 2014-05-17 for v2.0.00.
-         */
-        case SOCMessage.SETSPECIALITEM:
-            handleSETSPECIALITEM(game, connection, (SOCSetSpecialItem) message);
-            break;
-
-        /**
-         * Game stats request.
-         * Added 2022-09-22 for v2.7.00.
-         */
-        case SOCMessage.GAMESTATS:
-            handleGAMESTATS(game, connection, (SOCGameStats) message);
-            break;
-
-        /**
-         * Undo put piece/move piece request.
-         * Added 2022-11-09 for v2.7.00.
-         */
-        case SOCMessage.UNDOPUTPIECE:
-            handleUNDOPUTPIECE(game, connection, (SOCUndoPutPiece) message);
-            break;
-
-        /**
-         * Ignore all other message types, unknown message types.
-         */
+            /**
+             * Ignore all other message types, unknown message types.
+             */
         default:
             return false;
 
