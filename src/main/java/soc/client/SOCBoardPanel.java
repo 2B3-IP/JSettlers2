@@ -6896,13 +6896,50 @@ import javax.swing.JComponent;
             }
         }
 
+        private final Set<String> placedCoords = new HashSet<>();
         void handleBuild(String type, int x, int y, int pos) {
-            pos = (pos + 2) % 6; // the orientation of the board is different in the backend
-            int code = CoordBridge.getVertex(x, y, pos);
-            boardPanel.fakeMouseClicked(code);
-    }
+            int[] unityToJavaVertexDir = {1, 2, 3, 4, 5, 0};
+            int[] unityToJavaEdgeDir = {0, 1, 2, 3, 4, 5};
 
-   
+            String key;
+            int code = -1;
+
+            if (type.equalsIgnoreCase("HOUSE") || type.equalsIgnoreCase("SETTLEMENT")) {
+                int javaDir = unityToJavaVertexDir[pos];
+                key = x + " " + y + " " + javaDir;
+
+                code = CoordBridge.getVertex(x, y, javaDir);
+                if (code == -1) {
+                    System.err.println("Invalid vertex at " + key);
+                    return;
+                }
+
+                System.out.println("CLIENT0 sent SETTLEMENT " + key + " (code: " + code + ")");
+                boardPanel.setMode(SOCBoardPanel.PLACE_SETTLEMENT);
+                boardPanel.fakeMouseClicked(code);
+
+            } else if (type.equalsIgnoreCase("ROAD")) {
+                int javaDir = unityToJavaEdgeDir[pos];
+                key = x + " " + y + " " + javaDir;
+
+                code = CoordBridge.getEdgeCodeFromCoords(x, y, javaDir);
+                if (code == -1) {
+                    System.err.println(" Invalid edge at " + key);
+                    return;
+                }
+
+                String coords = CoordBridge.getEdge(code);
+                System.out.println("BOT3 sent ROAD " + key + " (code: " + code + ", edge coords: " + coords + ")");
+                boardPanel.setMode(SOCBoardPanel.PLACE_ROAD);
+                boardPanel.fakeMouseClicked(code);
+
+            } else {
+                System.err.println("Unknown build type: " + type);
+            }
+        }
+
+
+
     }
     @SuppressWarnings("fallthrough")
     public void fakeMouseClicked(int hilight)
