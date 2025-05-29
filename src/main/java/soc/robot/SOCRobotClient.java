@@ -23,7 +23,7 @@ package soc.robot;
 
 import soc.baseclient.ServerConnectInfo;
 import soc.baseclient.SOCDisplaylessPlayerClient;
-
+import soc.UnityBridge;//
 import soc.disableDebug.D;
 
 import soc.game.SOCGame;
@@ -99,6 +99,7 @@ import java.util.Vector;
  *
  * @author Robert S Thomas
  */
+
 public class SOCRobotClient extends SOCDisplaylessPlayerClient
 {
     /**
