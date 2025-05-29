@@ -6897,8 +6897,19 @@ import javax.swing.JComponent;
         }
 
         void handleBuild(String type, int x, int y, int pos) {
-            pos = (pos + 2) % 6; // the orientation of the board is different in the backend
-            int code = CoordBridge.getVertex(x, y, pos);
+            int code=0;
+
+            switch (type) {
+                case "House":
+                    pos = (pos + 1) % 6; // the orientation of the board is different in the backend
+                    code = CoordBridge.getVertex(x, y, pos);
+                    break;
+                case  "road":
+                    code = CoordBridge.getEdge(x,y,pos);
+                    break;
+
+            }
+
             boardPanel.fakeMouseClicked(code);
     }
 

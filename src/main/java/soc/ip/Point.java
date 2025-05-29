@@ -26,4 +26,7 @@ public class Point<A, B> {
     public int hashCode() {
         return Objects.hash(a, b);
     }
+
+
 }
+

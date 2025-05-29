@@ -208,7 +208,7 @@ public class SOCAccountClient extends Applet
     /**
      * the nickname
      */
-    protected String nickname = null;
+    protected String nickname = "CLIENT";
 
     /**
      * the password

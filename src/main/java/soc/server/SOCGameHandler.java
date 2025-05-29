@@ -1800,8 +1800,9 @@ public class SOCGameHandler extends GameHandler
             sendGameStateOVER(gameData, c);
 
         if (D.ebugOn)
-            D.ebugPrintlnINFO("*** " + cliName + " joined the game " + gameName + " at " + formatTimeHHMMSS(null));
+        {D.ebugPrintlnINFO("*** " + cliName + " joined the game " + gameName + " at " + formatTimeHHMMSS(null));
 
+        }
         if (isRejoinOrLoadgame && (gameState != SOCGame.LOADING))
         {
             return;
