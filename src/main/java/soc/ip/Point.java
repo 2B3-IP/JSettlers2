@@ -1,3 +1,5 @@
+package soc.ip;
+
 import java.util.Objects;
 
 public class Point<A, B> {

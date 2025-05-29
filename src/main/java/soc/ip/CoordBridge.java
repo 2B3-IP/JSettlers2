@@ -1,12 +1,16 @@
 package soc.ip;
 
-import soc.ip.Point;
+
 import java.util.*;
+
+import soc.ip.Point;
 
 
 public class CoordBridge {
 
     public static int[] addV = {0x01, 0x12, 0x21, 0x10, -0x01, -0x10};
+    public static int[] addE = {0x01, 0x11, 0x10, -0x01, -0x11, -0x10};
+
 
     public static HashMap<Point<Integer, Integer>, Integer> backToAiCode = new HashMap<>();
     public static HashMap<Integer, Point<Integer, Integer>> aiCodeToBack = new HashMap<>();
@@ -38,25 +42,8 @@ public class CoordBridge {
             backToAiCode.put(pos, base);
             aiCodeToBack.put(base, pos);
 
-            for (int d = 0; d < 6; d++) {
-                int edgeCode = base + addV[d];
-                String val = x + " " + y + " " + d;
-
-                edgeToCoords.put(edgeCode, val);
-                edgeToCoords.put(edgeCode + 1, val);  // fallback offset
-                edgeToCoords.put(edgeCode - 1, val);
-
-                // Reverse edge
-                int nx = x + directionDx(d);
-                int ny = y + directionDy(d);
-                int revCode = base - addV[d];
-                String revVal = nx + " " + ny + " " + ((d + 3) % 6);
-
-                edgeToCoords.putIfAbsent(revCode, revVal);
-                edgeToCoords.putIfAbsent(revCode + 1, revVal);
-                edgeToCoords.putIfAbsent(revCode - 1, revVal);
-            }
         }
+
     }
 
     public static String getVertex(int code) {
@@ -72,35 +59,29 @@ public class CoordBridge {
         return "ERROR";
     }
 
+
+    public static String getEdge(int code) {
+        for (Map.Entry<Integer, Point<Integer, Integer>> e : aiCodeToBack.entrySet()) {
+            int base = e.getKey();
+            Point<Integer, Integer> pos = e.getValue();
+            for (int i = 0; i < addE.length; i++) {
+                if (base + addE[i] == code) {
+                    return pos.getA() + " " + pos.getB() + " " + i;
+                }
+            }
+        }
+        return "ERROR";
+    }
+
+
+
     public static int getVertex(int x, int y, int d) {
         return backToAiCode.get(new Point<>(x, y)) + addV[d];
     }
 
-    public static String getEdge(int code) {
-        return edgeToCoords.getOrDefault(code, "ERROR");
+    public static int getEdge(int x, int y, int d) {
+        return backToAiCode.get(new Point<>(x, y)) + addE[d];
     }
 
-    private static int directionDx(int d) {
-        switch (d) {
-            case 0:
-            case 3: return 0;
-            case 1:
-            case 2: return 1;
-            case 4:
-            case 5: return -1;
-            default: return 0;
-        }
-    }
 
-    private static int directionDy(int d) {
-        switch (d) {
-            case 0:
-            case 1: return -1;
-            case 2:
-            case 5: return 0;
-            case 3:
-            case 4: return 1;
-            default: return 0;
-        }
-    }
 }
