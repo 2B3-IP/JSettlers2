@@ -66,25 +66,8 @@ public class CoordBridge {
             backToAiCode.put(pos, base);
             aiCodeToBack.put(base, pos);
 
-            for (int d = 0; d < 6; d++) {
-                int edgeCode = base + addV[d];
-                String val = x + " " + y + " " + d;
-
-                edgeToCoords.put(edgeCode, val);
-                edgeToCoords.put(edgeCode + 1, val);  // fallback offset
-                edgeToCoords.put(edgeCode - 1, val);
-
-                // Reverse edge
-                int nx = x + directionDx(d);
-                int ny = y + directionDy(d);
-                int revCode = base - addV[d];
-                String revVal = nx + " " + ny + " " + ((d + 3) % 6);
-
-                edgeToCoords.putIfAbsent(revCode, revVal);
-                edgeToCoords.putIfAbsent(revCode + 1, revVal);
-                edgeToCoords.putIfAbsent(revCode - 1, revVal);
-            }
         }
+
     }
 
     public static String getVertex(int code) {
@@ -124,27 +107,5 @@ public class CoordBridge {
         return backToAiCode.get(new Point<>(x, y)) + addE[d];
     }
 
-    private static int directionDx(int d) {
-        switch (d) {
-            case 0:
-            case 3: return 0;
-            case 1:
-            case 2: return 1;
-            case 4:
-            case 5: return -1;
-            default: return 0;
-        }
-    }
 
-    private static int directionDy(int d) {
-        switch (d) {
-            case 0:
-            case 1: return -1;
-            case 2:
-            case 5: return 0;
-            case 3:
-            case 4: return 1;
-            default: return 0;
-        }
-    }
 }
