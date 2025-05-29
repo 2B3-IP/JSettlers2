@@ -17,6 +17,12 @@ public final class UnityBridge {
             System.err.println("UnityBridge error: " + e);
         }
     }
+public static void sendBankTrade(int[] give, int[] recv) {
+    StringBuilder sb = new StringBuilder("BANKTRADE");
+    for (int r : give) sb.append(" ").append(r);
+    for (int r : recv) sb.append(" ").append(r);
+    send(sb.toString());
+}
 
     public static void sendBuildSettlement(int x, int y, int pos) {
         send("BUILD SETTLEMENT " + x + " " + y + " " + pos);

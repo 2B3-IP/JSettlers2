@@ -1,27 +1,3 @@
-/**
- * Java Settlers - An online multiplayer version of the game Settlers of Catan
- * This file Copyright (C) 2016 Alessandro D'Ottavio
- * Some contents were formerly part of SOCServer.java and SOCGameHandler.java;
- * Portions of this file Copyright (C) 2003 Robert S. Thomas <thomas@infolab.northwestern.edu>
- * Portions of this file Copyright (C) 2007-2025 Jeremy D Monin <jeremy@nand.net>
- * Portions of this file Copyright (C) 2012 Paul Bilnoski <paul@bilnoski.net>
- * Portions of this file Copyright (C) 2017-2018 Strategic Conversation (STAC Project) https://www.irit.fr/STAC/
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * The maintainer of this program can be reached at jsettlers@nand.net
- **/
 package soc.server;
 
 import java.text.MessageFormat;
@@ -29,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import soc.ip.Point;
 import soc.UnityBridge;//
 import soc.debug.D;
 import soc.game.GameAction;
@@ -50,6 +27,7 @@ import soc.game.SOCResourceSet;
 import soc.game.SOCRoad;
 import soc.game.SOCSettlement;
 import soc.game.SOCShip;
+import soc.ip.CoordBridge;
 import soc.game.SOCSpecialItem;
 import soc.game.SOCTradeOffer;
 import soc.game.SOCVillage;
@@ -102,6 +80,8 @@ public class SOCGameMessageHandler
         handler = sgh;
     }
 
+
+
     /**
      * Dispatch any request or event coming from a client player for a specific game.
      * This method is called from {@link SOCMessageDispatcher#dispatch(SOCMessage, Connection)} when the message is
@@ -124,7 +104,7 @@ public class SOCGameMessageHandler
     public boolean dispatch
         (SOCGame game, SOCMessageForGame message, Connection connection)
         throws Exception
-    {
+    {int coord ;
         switch (message.getType())
         {
 
@@ -132,42 +112,46 @@ public class SOCGameMessageHandler
          * someone put a piece on the board
          */
             case SOCMessage.PUTPIECE:
-    SOCPutPiece pp = (SOCPutPiece) message;
-    int coord = pp.getCoordinates();
-    int pieceType = pp.getPieceType();
 
-    int x = CoordBridge.getX(coord);
-    int y = CoordBridge.getY(coord);
-    int pos = CoordBridge.getVertexDirection(coord);  // pentru așezări / orașe
-    int edge = CoordBridge.getEdgeDirection(coord);   // pentru drumuri
+                SOCPutPiece pp = (SOCPutPiece) message;
+                 coord = pp.getCoordinates();
+                int pieceType = pp.getPieceType();
 
-    switch (pieceType) {
-        case SOCPlayingPiece.SETTLEMENT:
-            UnityBridge.sendBuildSettlement(x, y, pos);
-            break;
-        case SOCPlayingPiece.CITY:
-            UnityBridge.sendBuildCity(x, y, pos);
-            break;
-        case SOCPlayingPiece.ROAD:
-            UnityBridge.sendBuildRoad(x, y, edge);
-            break;
-    }
-    break;
+                String[] parts = CoordBridge.getEdge(coord).split(" ");
+                int x = Integer.parseInt(parts[0]);
+                int y = Integer.parseInt(parts[1]);
+                int d = Integer.parseInt(parts[2]);
+
+                switch (pieceType) {
+                    case SOCPlayingPiece.SETTLEMENT:
+                        UnityBridge.sendBuildSettlement(x, y, d);
+                        break;
+                    case SOCPlayingPiece.CITY:
+                        UnityBridge.sendBuildCity(x, y, d);
+                        break;
+                    case SOCPlayingPiece.ROAD:
+                        UnityBridge.sendBuildRoad(x, y, d);
+                        break;
+                }
+                break;
 
         /**
          * a player is moving the robber or pirate
          */
             case SOCMessage.MOVEROBBER:
-    SOCMoveRobber mr = (SOCMoveRobber) message;
-    int coord = mr.getCoordinates();
+                SOCMoveRobber mr = (SOCMoveRobber) message;
+                 coord = mr.getCoordinates();
 
-    // Doar pentru tâlhar, ignorăm pirații (negativ sau 0)
-    if (coord > 0) {
-        int x = CoordBridge.getX(coord);
-        int y = CoordBridge.getY(coord);
-        UnityBridge.sendMoveRobber(x, y);
-    }
-    break;
+// Doar pentru tâlhar, ignorăm pirații (negativ sau 0)
+                if (coord > 0) {
+                    Point<Integer, Integer> point = CoordBridge.aiCodeToBack.get(coord);
+                    if (point != null) {
+                        int rx = point.getA();
+                        int ry = point.getB();
+                        UnityBridge.sendMoveRobber(rx, ry);
+                    }
+                }
+                break;
 
             case SOCMessage.DICERESULT:
                 SOCDiceResult dr = (SOCDiceResult) message;
@@ -201,14 +185,29 @@ public class SOCGameMessageHandler
             case SOCMessage.CHOOSEPLAYER:
                 SOCChoosePlayer cp = (SOCChoosePlayer) message;
                 handleCHOOSEPLAYER(game, connection, cp);
-                UnityBridge.sendChoosePlayer(cp.getPlayer());
+                UnityBridge.sendChoosePlayer(cp.getChoice());
                 break;
 
-            case SOCMessage.MAKEOFFER:
-                SOCMakeOffer mo = (SOCMakeOffer) message;
-                handleMAKEOFFER(game, connection, mo);
-                UnityBridge.sendMakeOffer(mo.getResources());
-                break;
+   case SOCMessage.MAKEOFFER:
+        SOCMakeOffer mo = (SOCMakeOffer) message;
+         SOCResourceSet give = mo.getOffer().getGiveSet();
+         SOCResourceSet get = mo.getOffer().getGetSet();
+
+        int[] offer = new int[] {
+             give.getAmount(SOCResourceConstants.CLAY),
+             give.getAmount(SOCResourceConstants.ORE),
+             give.getAmount(SOCResourceConstants.SHEEP),
+             give.getAmount(SOCResourceConstants.WHEAT),
+            give.getAmount(SOCResourceConstants.WOOD),
+            get.getAmount(SOCResourceConstants.CLAY),
+            get.getAmount(SOCResourceConstants.ORE),
+            get.getAmount(SOCResourceConstants.SHEEP),
+             get.getAmount(SOCResourceConstants.WHEAT),
+             get.getAmount(SOCResourceConstants.WOOD)
+    };
+
+    UnityBridge.sendMakeOffer(offer);
+    break;
             case SOCMessage.CLEAROFFER:
                 SOCClearOffer co = (SOCClearOffer) message;
                 handleCLEAROFFER(game, connection, co);
@@ -229,7 +228,11 @@ public class SOCGameMessageHandler
             case SOCMessage.BANKTRADE:
                 SOCBankTrade bt = (SOCBankTrade) message;
                 handleBANKTRADE(game, connection, bt);
-                UnityBridge.sendBankTrade(bt.getGiveType(), bt.getReceiveType());
+                UnityBridge.sendBankTrade(
+    convertResourceSetToArray(bt.getGiveSet()),
+    convertResourceSetToArray(bt.getGetSet())
+);
+
                 break;
 
             case SOCMessage.BUILDREQUEST:
@@ -259,7 +262,7 @@ public class SOCGameMessageHandler
             case SOCMessage.PICKRESOURCES:
                 SOCPickResources pr = (SOCPickResources) message;
                 handlePICKRESOURCES(game, connection, pr);
-                UnityBridge.sendPickResources(pr.getResources());
+                UnityBridge.sendPickResources(pr.getResources().toArray());
                 break;
 
             case SOCMessage.PICKRESOURCETYPE:
@@ -271,7 +274,6 @@ public class SOCGameMessageHandler
             case SOCMessage.DEBUGFREEPLACE:
                 SOCDebugFreePlace dfp = (SOCDebugFreePlace) message;
                 handleDEBUGFREEPLACE(game, connection, dfp);
-                UnityBridge.sendDebugFreePlace(dfp.getX(), dfp.getY());
                 break;
 
             case SOCMessage.SIMPLEREQUEST:
@@ -283,19 +285,28 @@ public class SOCGameMessageHandler
             case SOCMessage.INVENTORYITEMACTION:
                 SOCInventoryItemAction ia = (SOCInventoryItemAction) message;
                 handleINVENTORYITEMACTION(game, connection, ia);
-                UnityBridge.sendInventoryAction(ia.getItemId(), ia.isAddAction());
+                UnityBridge.sendInventoryAction(ia.itemType, ia.action == SOCInventoryItemAction.ADD_PLAYABLE);
                 break;
 
             case SOCMessage.MOVEPIECE:
                 SOCMovePiece mp = (SOCMovePiece) message;
                 handleMOVEPIECE(game, connection, mp);
-                UnityBridge.sendMovePiece(mp.getX(), mp.getY());
+
+                int toCoord = mp.getToCoord();
+
+                Point<Integer, Integer> point = CoordBridge.aiCodeToBack.get(toCoord);
+                if (point != null) {
+                    x = point.getA();
+                    y = point.getB();
+                    UnityBridge.sendMovePiece(x, y);
+                }
                 break;
+
 
             case SOCMessage.SETSPECIALITEM:
                 SOCSetSpecialItem si = (SOCSetSpecialItem) message;
                 handleSETSPECIALITEM(game, connection, si);
-                UnityBridge.sendSpecialItem(si.getItemId());
+                //UnityBridge.sendSpecialItem(si.typeKey, si.gameItemIndex, si.playerItemIndex, si.coord, si.level, si.sv);
                 break;
 
             case SOCMessage.GAMESTATS:
@@ -306,7 +317,7 @@ public class SOCGameMessageHandler
             case SOCMessage.UNDOPUTPIECE:
                 SOCUndoPutPiece up = (SOCUndoPutPiece) message;
                 handleUNDOPUTPIECE(game, connection, up);
-                UnityBridge.sendUndoPutPiece(up.getX(), up.getY(), up.getLocation());
+                //UnityBridge.sendUndoPutPiece(up.getX(), up.getY(), up.getLocation());
                 break;
 
 
@@ -4064,6 +4075,14 @@ public class SOCGameMessageHandler
             return;  // ignore if type unknown; known TYPE_PLAYERS is never sent from client
 
         handler.sendGameStatsTiming(c, ga);
-    }
+    }private static int[] convertResourceSetToArray(SOCResourceSet resSet) {
+    return new int[] {
+        resSet.getAmount(SOCResourceConstants.CLAY),
+        resSet.getAmount(SOCResourceConstants.ORE),
+        resSet.getAmount(SOCResourceConstants.SHEEP),
+        resSet.getAmount(SOCResourceConstants.WHEAT),
+        resSet.getAmount(SOCResourceConstants.WOOD)
+    };
 
+}
 }

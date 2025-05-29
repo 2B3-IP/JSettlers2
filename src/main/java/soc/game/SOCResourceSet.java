@@ -41,6 +41,7 @@ import java.util.Arrays;
  * @see SOCResourceConstants
  * @see SOCPlayingPiece#getResourcesToBuild(int)
  */
+
 @SuppressWarnings("serial")
 public class SOCResourceSet implements ResourceSet, Serializable, Cloneable
 {
@@ -61,6 +62,16 @@ public class SOCResourceSet implements ResourceSet, Serializable, Cloneable
     /**
      * Make an empty resource set
      */
+    public int[] toArray() {
+    return new int[] {
+        getAmount(SOCResourceConstants.CLAY),
+        getAmount(SOCResourceConstants.ORE),
+        getAmount(SOCResourceConstants.SHEEP),
+        getAmount(SOCResourceConstants.WHEAT),
+        getAmount(SOCResourceConstants.WOOD),
+        getAmount(SOCResourceConstants.UNKNOWN)
+    };
+}
     public SOCResourceSet()
     {
         resources = new int[SOCResourceConstants.MAXPLUSONE];
