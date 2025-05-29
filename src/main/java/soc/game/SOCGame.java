@@ -23,11 +23,12 @@
  * The maintainer of this program can be reached at jsettlers@nand.net
  **/
 package soc.game;
+
+import soc.message.*;
 import java.net.Socket;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
-
 import soc.disableDebug.D;
 import soc.game.GameAction.ActionType;
 import soc.game.GameAction.EffectType;
@@ -37,7 +38,9 @@ import soc.util.DataUtils;
 import soc.util.IntPair;
 import soc.util.SOCFeatureSet;
 import soc.util.SOCGameBoardReset;
-
+import soc.server.SOCServer;
+import soc.message.SOCSitDown;
+import soc.server.genericServer.Connection;
 import java.io.Serializable;
 
 import java.util.ArrayList;
@@ -334,7 +337,7 @@ public class SOCGame implements Serializable, Cloneable
      * @see #moveRobber(int, int)
      */
     public static final int PLACING_ROBBER = 33;
-
+    private SOCServer server;
     /**
      * Player is placing the pirate ship on a new water hex,
      * in a game which {@link #hasSeaBoard}.
@@ -1617,12 +1620,58 @@ public class SOCGame implements Serializable, Cloneable
         if (active)
             startTime = new Date();
         lastActionTime = System.currentTimeMillis();
+        this.addPlayer("Player", 0);  // CLIENT player
+        this.getPlayer(0).setRobotFlag(false, false);
+
+
+
     }
 
-    /**
-     * Take the synchronization monitor for this game.
-     * When done, release it with {@link #releaseMonitor()}.
-     */
+
+    public void setServer(SOCServer server) {
+        this.server = server;
+    }
+
+    public void startWithRobots()
+    {
+        System.out.println("⚙️ startWithRobots() called");
+
+        boolean[] vacantSeats = new boolean[maxPlayers];
+        int vacantCount = 0;
+
+        for (int i = 0; i < maxPlayers; i++) {
+            if (this.isSeatVacant(i)) {
+                vacantSeats[i] = true;
+                vacantCount++;
+            } else {
+                vacantSeats[i] = false;
+            }
+        }
+
+        System.out.println("👤 Seats vacant: " + vacantCount);
+
+        try {
+            // trimite cerere către SOCServer să adauge boți în locurile libere
+            boolean robotsAdded = server.readyGameAskRobotsJoin(this, vacantSeats, null, 0);
+            System.out.println("🤖 Robots requested: " + robotsAdded);
+
+
+            // opțional: pornește jocul după ce boții sunt adăugați
+            if (robotsAdded) {
+                  // dacă nu o setezi deja înainte
+                this.startGame();
+                System.out.println("✅ Game started");
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Failed to add robots or start game: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public SOCServer getServer() {
+        return server;
+    }
+
     public synchronized void takeMonitor()
     {
         //D.ebugPrintln("TAKE MONITOR");
@@ -2200,7 +2249,6 @@ public class SOCGame implements Serializable, Cloneable
         for (int pn = 0; pn < seats.length; ++pn)
             if (seats[pn] == OCCUPIED)
                 ++n;
-
         return n;
     }
 

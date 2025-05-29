@@ -1243,6 +1243,8 @@ import javax.swing.UIManager;
 
         // set the starting state of the panel
         removePlayer();
+
+        messageSender.startGame(game);
     }
 
     /** Color square label created by most recent call to {@link #createAndAddResourceColorSquare(Color, String)}. */
@@ -1313,6 +1315,7 @@ import javax.swing.UIManager;
      */
     public void actionPerformed(ActionEvent e)
     {
+
         try {
         String target = e.getActionCommand();
 
@@ -2112,12 +2115,23 @@ import javax.swing.UIManager;
      */
     public void addSitButton(boolean clientHasSatAlready)
     {
+        if (!clientHasSatAlready && playerIsClient) {
+
+            for (int i = 0; i < SOCGame.MAXPLAYERS; i++) {
+                if (game.isSeatVacant(i)) {
+                    messageSender.sitDown(game, i);
+                    break;
+                }
+            }
+            return;
+        }
+
         if (! clientHasSatAlready)
         {
             if (game.getGameState() >= SOCGame.START2A)
             {
                 sitBut.setVisible(false);
-                return;  // <--- Early return ---
+                return;
             }
 
             if (sitButIsLock)
@@ -2133,7 +2147,6 @@ import javax.swing.UIManager;
 
         sitBut.setVisible(true);
     }
-
     /**
      * DOCUMENT ME!
      */
@@ -2437,7 +2450,11 @@ import javax.swing.UIManager;
      * @see #removePlayer()
      */
     public void addPlayer(String name)
+    {if (name.equals("Player"))  // temporar hardcode pentru test
     {
+        playerIsClient = true;
+        playerInterface.setClientHand(this);
+    }
         // hide temporarily to avoid flicker
         if (blankStandIn != null)
             blankStandIn.setVisible(true);

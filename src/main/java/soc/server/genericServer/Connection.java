@@ -24,7 +24,9 @@ import java.io.DataOutputStream;  // strictly for javadocs
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.MissingResourceException;
-
+import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
 import soc.game.SOCGame;  // strictly for passthrough in getLocalizedSpecial, and javadocs; not used otherwise
 import soc.message.SOCMessage;
 import soc.util.SOCStringManager;
@@ -102,7 +104,7 @@ public abstract class Connection
      * @since 2.0.0
      */
     protected String localeStr;
-
+    protected PrintWriter out;
     /**
      * The server-side string manager for app-specific client message formatting, or {@code null}.
      * Not used or referenced by the generic server layer.
@@ -462,6 +464,13 @@ public abstract class Connection
      * @return True if we've confirmed the version, false if it's assumed or default.
      * @since 1.0.5
      */
+    public void putMessage(SOCMessage mes) {
+
+            out.write(mes.toCmd());
+            out.write("\n");
+            out.flush();
+    }
+
     public boolean isVersionKnown()
     {
         return remoteVersionKnown;

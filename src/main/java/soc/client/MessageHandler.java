@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import soc.server.SOCServer;
 
 import soc.baseclient.SOCDisplaylessPlayerClient;
 import soc.disableDebug.D;
@@ -1302,6 +1303,7 @@ public class MessageHandler
         }
 
         SOCGame ga = new SOCGame(gaName, gameOpts, knownOpts);
+
         if (ga != null)
         {
             ga.isPractice = isPractice;
@@ -1311,6 +1313,7 @@ public class MessageHandler
                 client.getMainDisplay().gameJoined(ga, mes.getLayoutVS(), client.getGameReqLocalPrefs().get(gaName));
             client.getClientListeners().put(gaName, clientListener);
             client.games.put(gaName, ga);
+
         }
     }
 

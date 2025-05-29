@@ -210,7 +210,7 @@ public class SOCDisplaylessPlayerClient implements Runnable {
     /**
      * the nickname
      */
-    protected String nickname = null;
+    protected String nickname = "CLIENT";
 
     /**
      * the password

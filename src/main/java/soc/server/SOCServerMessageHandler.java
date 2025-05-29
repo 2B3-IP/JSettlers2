@@ -2844,6 +2844,7 @@ public class SOCServerMessageHandler
 
         try
         {
+
             if (ga.getGameState() == SOCGame.NEW)
             {
                 boolean allowStart = true;
@@ -2921,8 +2922,8 @@ public class SOCServerMessageHandler
                     final int numBots = srv.getRobotCount();
                     if (numBots == 0)
                     {
-                        if (numPlayers < SOCGame.MINPLAYERS)
-                            srv.messageToGameKeyed(ga, true, true, "start.no.robots.on.server", SOCGame.MINPLAYERS);
+                        if (numPlayers < 4)
+                            srv.messageToGameKeyed(ga, true, true, "start.no.robots.on.server", 4);
                                 // "No robots on this server, please fill at least {0} seats before starting."
                         else
                             seatsFull = true;  // Enough players to start game.
