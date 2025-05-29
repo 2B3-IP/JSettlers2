@@ -33,6 +33,8 @@ import java.util.*;
 public class CoordBridge {
 
     public static int[] addV = {0x01, 0x12, 0x21, 0x10, -0x01, -0x10};
+    public static int[] addE = {0x01, 0x11, 0x10, -0x01, -0x11, -0x10};
+
 
     public static HashMap<Point<Integer, Integer>, Integer> backToAiCode = new HashMap<>();
     public static HashMap<Integer, Point<Integer, Integer>> aiCodeToBack = new HashMap<>();
@@ -98,12 +100,28 @@ public class CoordBridge {
         return "ERROR";
     }
 
+
+    public static String getEdge(int code) {
+        for (Map.Entry<Integer, Point<Integer, Integer>> e : aiCodeToBack.entrySet()) {
+            int base = e.getKey();
+            Point<Integer, Integer> pos = e.getValue();
+            for (int i = 0; i < addE.length; i++) {
+                if (base + addE[i] == code) {
+                    return pos.getA() + " " + pos.getB() + " " + i;
+                }
+            }
+        }
+        return "ERROR";
+    }
+
+
+
     public static int getVertex(int x, int y, int d) {
         return backToAiCode.get(new Point<>(x, y)) + addV[d];
     }
 
-    public static String getEdge(int code) {
-        return edgeToCoords.getOrDefault(code, "ERROR");
+    public static int getEdge(int x, int y, int d) {
+        return backToAiCode.get(new Point<>(x, y)) + addE[d];
     }
 
     private static int directionDx(int d) {
