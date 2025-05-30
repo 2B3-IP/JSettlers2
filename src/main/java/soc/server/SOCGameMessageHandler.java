@@ -112,7 +112,7 @@ public class SOCGameMessageHandler
          * someone put a piece on the board
          */
             case SOCMessage.PUTPIECE:
-
+                handlePUTPIECE(game, connection, (SOCPutPiece) message);
                 SOCPutPiece pp = (SOCPutPiece) message;
                  coord = pp.getCoordinates();
                 int pieceType = pp.getPieceType();
@@ -139,6 +139,7 @@ public class SOCGameMessageHandler
          * a player is moving the robber or pirate
          */
             case SOCMessage.MOVEROBBER:
+                handleMOVEROBBER(game, connection, (SOCMoveRobber) message);
                 SOCMoveRobber mr = (SOCMoveRobber) message;
                  coord = mr.getCoordinates();
 
@@ -2000,7 +2001,7 @@ public class SOCGameMessageHandler
      * @param player  Requesting player; must be current player
      * @param c   Requesting {@code player}'s connection
      * @param pieceType {@link SOCPlayingPiece#SETTLEMENT}, {@link SOCPlayingPiece#SHIP}, etc
-     * @param sendGameState  True if {@link SOCGameHander#sendGameState(SOCGame)} should be called
+     //* @param sendGameState  True if {@link //SOCGameHander#sendGameState(SOCGame)} should be called
      *            after buying the piece
      * @return  True if piece build was allowed, false if it was rejected.<BR>
      *   If false, game state is unchanged. If true, it's a state like {@link SOCGame#PLACING_ROAD}

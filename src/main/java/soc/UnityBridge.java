@@ -10,12 +10,13 @@ public final class UnityBridge {
     private UnityBridge() {}
 
     private static void send(String msg) {
-        try (Socket s = new Socket(HOST, PORT);
-             PrintWriter w = new PrintWriter(s.getOutputStream(), true)) {
-            w.println(msg);
-        } catch (IOException e) {
-            System.err.println("UnityBridge error: " + e);
-        }
+        System.out.println("musca "+msg);
+        // try (Socket s = new Socket(HOST, PORT);
+        //      PrintWriter w = new PrintWriter(s.getOutputStream(), true)) {
+        //     w.println(msg);
+        // } catch (IOException e) {
+        //     System.err.println("UnityBridge error: " + e);
+        // }
     }
 public static void sendBankTrade(int[] give, int[] recv) {
     StringBuilder sb = new StringBuilder("BANKTRADE");
