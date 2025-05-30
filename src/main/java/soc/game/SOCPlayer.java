@@ -193,7 +193,6 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
      * @see #getPieces()
      */
     private Vector<SOCPlayingPiece> pieces;
-
     /**
      * a list of this player's roads and ships in play.
      * Although roads and ships are kept together here,
@@ -282,6 +281,14 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
      * @since 2.0.00
      */
     int forcedEndTurnCount;
+     public void setCurrentOffer(SOCTradeOffer offer) {
+    this.currentOffer = offer;
+
+    // Notify Unity if needed
+    if (game.getTradeMonitor() != null && offer != null) {
+        game.getTradeMonitor().onTradeOffer(playerNumber, offer);
+    }
+}
 
     /**
      * Total count of how many of each known resource the player has received this game
@@ -2925,15 +2932,9 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
      *     Doesn't validate that {@link SOCTradeOffer#getFrom() offer.getFrom()}
      *     is this player; server must do so.
      */
-    public void setCurrentOffer(final SOCTradeOffer offer)
-    {
-        currentOffer = offer;
-        currentOfferTimeMillis = System.currentTimeMillis();
-    }
-
     /**
      * Get the time at which this player's current offer was made or cleared:
-     * Time of last call to {@link #setCurrentOffer(SOCTradeOffer)}
+     * Time of last call to {}
      * with any offer or {@code null}, in same format as {@link System#currentTimeMillis()}.
      * @return  time of most recent call to {@code setCurrentOffer(..)},
      *     or 0 if never called during game

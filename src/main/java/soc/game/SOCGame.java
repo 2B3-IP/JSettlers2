@@ -8382,6 +8382,11 @@ public class SOCGame implements Serializable, Cloneable
      * @see #makeBankTrade(SOCResourceSet, SOCResourceSet)
      * @see #rejectTradeOffersTo(int)
      */
+       //functie implementata de tudor !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    private TradeMonitor tradeMonitor;
+    public void setTradeMonitor(TradeMonitor monitor) {
+    this.tradeMonitor = monitor;
+}
     public void makeTrade(final int offering, final int accepting)
     {
         if (isGameOptionSet("NT"))
@@ -8395,6 +8400,14 @@ public class SOCGame implements Serializable, Cloneable
 
         lastActionTime = System.currentTimeMillis();
         lastAction = null;
+        if (tradeMonitor != null) {
+    tradeMonitor.onTradeAccepted(offering, accepting, offeredToGive, offeredToGet);
+}
+public TradeMonitor getTradeMonitor() {
+    return tradeMonitor;
+}
+
+
     }
 
     /**
