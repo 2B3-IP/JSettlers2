@@ -2106,15 +2106,18 @@ public class SOCDisplaylessPlayerClient implements Runnable {
      * @param mes the message
      * @param ga  Message's game from {@link SOCPutPiece#getGame()}; if {@code null}, message is ignored
      */
+    public static SOCPutPiece lastmove;
     public static void handlePUTPIECE(final SOCPutPiece mes, final SOCGame ga) {
         if (ga == null)
             return;
 
         final int pieceType = mes.getPieceType();
         final int coord = mes.getCoordinates();
-        LogHandler logHandler = new LogHandler();
-        logHandler.putpiece(mes);//fac un if ptr last message ca sa nu mai afisez de 3 ori si doar odata
-
+        if(mes==lastmove) {
+            LogHandler logHandler = new LogHandler();
+            logHandler.putpiece(mes);//fac un if ptr last message ca sa nu mai afisez de 3 ori si doar odata
+        }
+        lastmove = mes;
         final SOCPlayer pl = (pieceType != SOCPlayingPiece.VILLAGE)
                 ? ga.getPlayer(mes.getPlayerNumber())
                 : null;

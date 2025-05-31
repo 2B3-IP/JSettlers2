@@ -2,6 +2,7 @@ package soc;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 public final class UnityBridge {
@@ -82,6 +83,10 @@ public static void sendBankTrade(int[] give, int[] recv) {
     public static void sendSimpleRequest(int t) {
         send("SIMPLEREQUEST " + t);
     }
+    public static void sendMove(String message) {
+        send(message);  // Refolosește metoda privată `send`
+    }
+
     public static void sendInventoryAction(int id, boolean add) {
         send("INVENTORYITEMACTION " + id + " " + (add ? "ADD" : "REMOVE"));
     }
