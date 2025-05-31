@@ -8620,6 +8620,7 @@ public class SOCGame implements Serializable, Cloneable
      */
     public void buyRoad(final int pn)
     {
+        System.out.println(players[pn] + "a cumparat un drum!");
         SOCResourceSet resources = players[pn].getResources();
         resources.subtract(1, SOCResourceConstants.CLAY);
         resources.subtract(1, SOCResourceConstants.WOOD);
