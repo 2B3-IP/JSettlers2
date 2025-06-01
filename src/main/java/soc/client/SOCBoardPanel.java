@@ -6863,7 +6863,7 @@ import javax.swing.JComponent;
 
         @Override
         public void run() {
-
+ // BUY ROAD 1 -1 2
             try {
                 while (true) {
                     try (Socket sock = new Socket(host, port);
@@ -6880,6 +6880,12 @@ import javax.swing.JComponent;
                                             Integer.valueOf(parts[3]),
                                             Integer.valueOf(parts[4]));
                                     break;
+                                case "BUY":
+                                    ///  your code to switch state
+                                    handleBuild(parts[1],
+                                            Integer.valueOf(parts[2]),
+                                            Integer.valueOf(parts[3]),
+                                            Integer.valueOf(parts[4]));
                             }
                         }
 
