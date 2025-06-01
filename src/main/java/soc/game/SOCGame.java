@@ -23,6 +23,13 @@
  * The maintainer of this program can be reached at jsettlers@nand.net
  **/
 package soc.game;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 
 import soc.message.*;
 import java.net.Socket;
@@ -1450,6 +1457,7 @@ public class SOCGame implements Serializable, Cloneable
     public SOCGame(final String gameName)
     {
         this(gameName, true, null, null);
+          startUnityTradeListener();
     }
 
     /**
@@ -8366,6 +8374,124 @@ public class SOCGame implements Serializable, Cloneable
 
         return true;
     }
+    // În clasa care are deja `SOCGame game`
+public void startUnityTradeListener()
+{
+    new Thread(() -> {
+        try (ServerSocket serverSocket = new ServerSocket(6969)) {
+            System.out.println("Listening on port 6969...");
+            while (true) {
+                Socket socket = serverSocket.accept();
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+
+                String line;
+                while ((line = in.readLine()) != null) {
+                    System.out.println("Received: " + line);
+                    boolean accepted = handleUnityTradeOffer(line);  // vezi pas 2
+                    out.write("TRADE_RESULT accepted=" + accepted);
+                    out.newLine();
+                    out.flush();
+                }
+
+                socket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }).start();
+}
+public boolean handleUnityTradeOffer(String line)
+{
+    try {
+        if (!line.startsWith("TRADE_OFFER ")) return false;
+
+        String[] parts = line.substring("TRADE_OFFER ".length()).split(" ");
+        int from = -1;
+        boolean[] to = null;
+        SOCResourceSet give = new SOCResourceSet();
+        SOCResourceSet get = new SOCResourceSet();
+
+        for (String part : parts) {
+            String[] kv = part.split("=", 2);
+            if (kv.length != 2) continue;
+
+            switch (kv[0]) {
+                case "from":
+                    from = Integer.parseInt(kv[1]);
+                    break;
+                case "to":
+                    String[] bools = kv[1].split(",");
+                    to = new boolean[bools.length];
+                    for (int j = 0; j < bools.length; j++)
+                        to[j] = Boolean.parseBoolean(bools[j]);
+                    break;
+                case "give":
+                    parseResourceSetInto(give, kv[1]);
+                    break;
+                case "get":
+                    parseResourceSetInto(get, kv[1]);
+                    break;
+            }
+        }
+
+        if (from < 0 || to == null)
+            return false;
+
+        SOCTradeOffer offer = new SOCTradeOffer("GAME", from, to, give, get);
+        this.players[from].setCurrentOffer(offer);
+
+        boolean accepted = false;
+        for (int i = 0; i < to.length; i++) {
+            if (to[i]) {
+                if (this.canMakeTrade(from, i)) {
+                    this.makeTrade(from, i);
+                    accepted = true;
+                    System.out.println("✅ Bot " + i + " ACCEPTĂ trade-ul.");
+                } else {
+                    this.rejectTradeOffersTo(i);
+                    System.out.println("❌ Bot " + i + " REFUZĂ trade-ul.");
+                }
+            }
+        }
+
+        return accepted;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
+private void parseResourceSetInto(SOCResourceSet set, String data)
+{
+    String[] entries = data.split(",");
+    for (String entry : entries) {
+        String[] kv = entry.split(":");
+        if (kv.length != 2) continue;
+
+        String res = kv[0]; 
+        int amt = Integer.parseInt(kv[1]);
+
+        switch (res) {
+            case "brick":
+            case "clay":
+                set.add(SOCResourceConstants.CLAY, amt); break;
+            case "lumber":
+            case "wood":
+                set.add(SOCResourceConstants.WOOD, amt); break;
+            case "grain":
+            case "wheat":
+                set.add(SOCResourceConstants.WHEAT, amt); break;
+            case "ore":
+                set.add(SOCResourceConstants.ORE, amt); break;
+            case "wool":
+            case "sheep":
+                set.add(SOCResourceConstants.SHEEP, amt); break;
+        }
+    }
+}
+
 
     /**
      * perform a trade between two players.

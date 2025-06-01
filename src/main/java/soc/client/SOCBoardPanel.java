@@ -1817,7 +1817,7 @@ import javax.swing.JComponent;
         super();
         setOpaque(true);
 
-        game = pi.getGame();
+        game = pi.getGame();  
         playerInterface = pi;
         player = null;
         playerNumber = -1;
