@@ -2,7 +2,7 @@ package soc.ip;
 
 import soc.game.SOCPlayingPiece;
 import soc.message.SOCPutPiece;
-
+import soc.game.SOCGame;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -30,15 +30,30 @@ public class LogHandler {
 
         System.out.println(logMessage);
 
-        // Send the log message to the JavaWrapperServer
+
         try (Socket socket = new Socket(JAVA_WRAPPER_SERVER_HOST, JAVA_WRAPPER_SERVER_PORT);
              PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true)) {
 
-            out.println(logMessage); // Send the log message
+            out.println(logMessage);
             System.out.println("Sent to JavaWrapperServer: " + logMessage);
 
         } catch (Exception e) {
             System.err.println("Error communicating with JavaWrapperServer: " + e.getMessage());
         }
     }
+
+    public static void moveRobber(int playerNumber, int x, int y) {
+        String who = (playerNumber == 0) ? "CLIENT" + playerNumber : "BOT" + playerNumber;
+        String logMessage = who + " sent ROBBER " + x + " " + y;
+
+        System.out.println(logMessage);
+
+        try (Socket socket = new Socket(JAVA_WRAPPER_SERVER_HOST, JAVA_WRAPPER_SERVER_PORT);
+             PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true)) {
+            out.println(logMessage);
+        } catch (Exception e) {
+            System.err.println("Error sending ROBBER log: " + e.getMessage());
+        }
+    }
 }
+

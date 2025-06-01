@@ -22,7 +22,7 @@
  * The maintainer of this program can be reached at jsettlers@nand.net
  **/
 package soc.client;
-
+import soc.ip.*;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import soc.server.SOCServer;
-
+import soc.util.Pair;
 import soc.baseclient.SOCDisplaylessPlayerClient;
 import soc.disableDebug.D;
 import soc.game.SOCBoardLarge;
@@ -420,13 +420,20 @@ public class MessageHandler
             /**
              * the robber or pirate moved
              */
-            case SOCMessage.MOVEROBBER:
-                handleMOVEROBBER((SOCMoveRobber) mes);
-                break;
 
-            /**
-             * prompt this player to discard
-             */
+                case SOCMessage.MOVEROBBER:
+                    SOCMoveRobber mover = (SOCMoveRobber) mes;
+                    handleMOVEROBBER(mover);
+
+                    Pair<Integer, Integer> pos = CoordBridge.getHex(mover.getCoordinates());
+                    if (pos != null)
+                        LogHandler.moveRobber(mover.getPlayerNumber(), pos.getA(), pos.getB());
+
+                    break;
+
+                /**
+                 * prompt this player to discard
+                 */
             case SOCMessage.DISCARDREQUEST:
                 handleDISCARDREQUEST((SOCDiscardRequest) mes);
                 break;
@@ -2227,6 +2234,10 @@ public class MessageHandler
         if (! isPirate)
         {
             ga.getBoard().setRobberHex(newHex, true);
+            Pair<Integer, Integer> pos = CoordBridge.getHex(newHex);
+            if (pos != null)
+                LogHandler.moveRobber(mes.getPlayerNumber(), pos.getA(), pos.getB());
+
         } else {
             newHex = -newHex;
             ((SOCBoardLarge) ga.getBoard()).setPirateHex(newHex, true);
