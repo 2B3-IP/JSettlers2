@@ -117,22 +117,37 @@ public class SOCGameMessageHandler
                  coord = pp.getCoordinates();
                 int pieceType = pp.getPieceType();
 
-                String[] parts = CoordBridge.getEdge(coord).split(" ");
-                int x = Integer.parseInt(parts[0]);
-                int y = Integer.parseInt(parts[1]);
-                int d = Integer.parseInt(parts[2]);
+                String[] parts;
+                int x ;
+                int y ;
+                int d ;
 
-                switch (pieceType) {
-                    case SOCPlayingPiece.SETTLEMENT:
-                        UnityBridge.sendBuildSettlement(x, y, d);
-                        break;
-                    case SOCPlayingPiece.CITY:
-                        UnityBridge.sendBuildCity(x, y, d);
-                        break;
-                    case SOCPlayingPiece.ROAD:
-                        UnityBridge.sendBuildRoad(x, y, d);
-                        break;
+                if(((SOCPutPiece) message).getPlayerNumber()!=0) {
+                    switch (pieceType) {
+                        case SOCPlayingPiece.SETTLEMENT:
+                            parts = CoordBridge.getVertex(coord).split(" ");
+                            x = Integer.parseInt(parts[0]);
+                            y = Integer.parseInt(parts[1]);
+                            d = Integer.parseInt(parts[2]);
+                            UnityBridge.sendBuildSettlement(x, y, d);
+                            break;
+                        case SOCPlayingPiece.CITY:
+                            parts = CoordBridge.getVertex(coord).split(" ");
+                            x = Integer.parseInt(parts[0]);
+                            y = Integer.parseInt(parts[1]);
+                            d = Integer.parseInt(parts[2]);
+                            UnityBridge.sendBuildCity(x, y, d);
+                            break;
+                        case SOCPlayingPiece.ROAD:
+                            parts = CoordBridge.getEdge(coord).split(" ");
+                            x = Integer.parseInt(parts[0]);
+                            y = Integer.parseInt(parts[1]);
+                            d = Integer.parseInt(parts[2]);
+                            UnityBridge.sendBuildRoad(x, y, d);
+                            break;
+                    }
                 }
+
                 break;
 
         /**

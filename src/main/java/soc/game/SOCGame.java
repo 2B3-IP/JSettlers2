@@ -25,10 +25,10 @@
 package soc.game;
 
 import soc.message.*;
+
+import java.io.*;
 import java.net.Socket;
-import java.io.PrintWriter;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
+
 import soc.disableDebug.D;
 import soc.game.GameAction.ActionType;
 import soc.game.GameAction.EffectType;
@@ -41,7 +41,6 @@ import soc.util.SOCGameBoardReset;
 import soc.server.SOCServer;
 import soc.message.SOCSitDown;
 import soc.server.genericServer.Connection;
-import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6518,30 +6517,43 @@ public class SOCGame implements Serializable, Cloneable
      *         is called again.
      * @see #getResourcesGainedFromRoll(SOCPlayer, int)
      */
+
     public static int GetValueFromBackend() {
-    try (Socket socket = new Socket("localhost", 6969);
-         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        try (Socket socket = new Socket("localhost", 6969); BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-        // Trimite comanda
-        out.println("GET_DICE");
-
-        // Primește răspunsul
-        String response = in.readLine();
-
-        if (response != null && response.startsWith("DICE_NUMBER")) {
-            String[] parts = response.split(" ");
-            return Integer.parseInt(parts[1]);
-        } else {
-            System.out.println("Unexpected response: " + response);
+            String line;
+            while ((line = in.readLine()) != null) {
+                String[] parts = line.split(" ");
+                String keyword = parts[0];
+                System.out.println(line);
+                switch (keyword) {
+                    case "DICE_NUMBER":
+                        return Integer.parseInt(parts[1]);
+                    default:
+                        throw new IOException("Unknown keyword: " + keyword);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-    } catch (Exception ex) {
-        ex.printStackTrace();
+        return 6; // fallback dacă ceva nu merge
     }
 
-    return -1; // fallback dacă ceva nu merge
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public RollResult rollDice()
     {

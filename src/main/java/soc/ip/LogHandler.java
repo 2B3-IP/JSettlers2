@@ -30,14 +30,12 @@ public class LogHandler {
         }
 
         logMessage += actionMessage;
+        System.out.println(logMessage);
 
-        if (!logMessage.equals(lastMessage)) {
-            System.out.println(logMessage);
-            lastMessage = logMessage;
-        }
 
         try {
-            UnityBridge.sendMove(actionMessage);
+            if(mes.getPlayerNumber() != 0) // is bot
+                 UnityBridge.sendMove(actionMessage);
         } catch (Exception e) {
             System.err.println("? Unity connection failed: " + e.getMessage());
         }

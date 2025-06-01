@@ -47,6 +47,7 @@ public class CoordBridge {
     }
 
     public static String getVertex(int code) {
+//        System.out.println("CODE: "+code);
         for (Map.Entry<Integer, Point<Integer, Integer>> e : aiCodeToBack.entrySet()) {
             int base = e.getKey();
             Point<Integer, Integer> pos = e.getValue();
@@ -61,6 +62,7 @@ public class CoordBridge {
 
 
     public static String getEdge(int code) {
+
         for (Map.Entry<Integer, Point<Integer, Integer>> e : aiCodeToBack.entrySet()) {
             int base = e.getKey();
             Point<Integer, Integer> pos = e.getValue();

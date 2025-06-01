@@ -6,18 +6,23 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public final class UnityBridge {
-    private static final String HOST = "127.0.0.1";
-    private static final int PORT = 6868;
+    private static final String HOST = "localhost";
+    private static final int PORT = 7070;
     private UnityBridge() {}
 
     private static void send(String msg) {
         System.out.println("musca "+msg);
-        // try (Socket s = new Socket(HOST, PORT);
-        //      PrintWriter w = new PrintWriter(s.getOutputStream(), true)) {
-        //     w.println(msg);
-        // } catch (IOException e) {
-        //     System.err.println("UnityBridge error: " + e);
-        // }
+         try (Socket s = new Socket(HOST, PORT);
+              PrintWriter w = new PrintWriter(s.getOutputStream(), true)) {
+             w.println(msg);
+//             Thread.sleep(1000);
+
+         } catch (IOException e) {
+             System.err.println("UnityBridge error: " + e);
+         }
+         catch (Exception e) {
+             System.err.println("UnityBridge error: " + e);
+         }
     }
 public static void sendBankTrade(int[] give, int[] recv) {
     StringBuilder sb = new StringBuilder("BANKTRADE");
@@ -33,7 +38,7 @@ public static void sendBankTrade(int[] give, int[] recv) {
         send("BUILD CITY " + x + " " + y + " " + pos);
     }
     public static void sendBuildRoad(int x, int y, int edge) {
-        send("ROAD " + x + " " + y + " " + edge);
+        send("BUILD ROAD " + x + " " + y + " " + edge);
     }
     public static void sendMoveRobber(int x, int y) {
         send("MOVEROBBER " + x + " " + y);

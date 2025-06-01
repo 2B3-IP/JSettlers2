@@ -2113,10 +2113,13 @@ public class SOCDisplaylessPlayerClient implements Runnable {
 
         final int pieceType = mes.getPieceType();
         final int coord = mes.getCoordinates();
-        if(mes==lastmove) {
-            LogHandler logHandler = new LogHandler();
-            logHandler.putpiece(mes);//fac un if ptr last message ca sa nu mai afisez de 3 ori si doar odata
-        }
+//        if(!mes.equals(lastmove)) {
+//            LogHandler logHandler = new LogHandler();
+//            logHandler.putpiece(mes);
+//        }
+//        else{
+//            System.out.println("THE IF WORKED");
+//        }
         lastmove = mes;
         final SOCPlayer pl = (pieceType != SOCPlayingPiece.VILLAGE)
                 ? ga.getPlayer(mes.getPlayerNumber())
