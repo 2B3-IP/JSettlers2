@@ -1,7 +1,5 @@
 package soc.ip;
-import java.awt.Point;
-
-
+import soc.util.Pair;
 import java.util.*;
 
 import soc.ip.Point;
@@ -59,9 +57,10 @@ public class CoordBridge {
         }
         return "ERROR";
     }
-    public static Pair<Integer, Integer> getHex(int code) {
+    public static Point<Integer, Integer> getHex(int code) {
         return aiCodeToBack.get(code);
     }
+
 
 
 

@@ -23,6 +23,7 @@
  **/
 package soc.client;
 import soc.ip.*;
+import soc.ip.Point;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -421,13 +422,7 @@ public class MessageHandler
              */
 
                 case SOCMessage.MOVEROBBER:
-                    SOCMoveRobber mover = (SOCMoveRobber) mes;
-                    handleMOVEROBBER(mover);
-
-                    Pair<Integer, Integer> pos = CoordBridge.getHex(mover.getCoordinates());
-                    if (pos != null)
-                        LogHandler.moveRobber(mover.getPlayerNumber(), pos.getA(), pos.getB());
-
+                    handleMOVEROBBER((SOCMoveRobber) mes);
                     break;
 
                 /**
@@ -2187,24 +2182,19 @@ public class MessageHandler
      * handle the "robber moved" or "pirate moved" message.
      * @param mes  the message
      */
-    protected void handleMOVEROBBER(SOCMoveRobber mes)
-    {
+    protected void handleMOVEROBBER(SOCMoveRobber mes) {
         SOCGame ga = client.games.get(mes.getGame());
         if (ga == null)
             return;
 
-        /**
-         * Note: Don't call ga.moveRobber() because that will call the
-         * functions to do the stealing.  We just want to say where
-         * the robber moved without seeing if something was stolen.
-         */
         ga.setPlacingRobberForKnightCard(false);
         int newHex = mes.getCoordinates();
         final boolean isPirate = (newHex <= 0);
-        if (! isPirate)
-        {
+
+        if (!isPirate) {
             ga.getBoard().setRobberHex(newHex, true);
-            Pair<Integer, Integer> pos = CoordBridge.getHex(newHex);
+
+            Point<Integer, Integer> pos = CoordBridge.getHex(newHex);
             if (pos != null)
                 LogHandler.moveRobber(mes.getPlayerNumber(), pos.getA(), pos.getB());
 
