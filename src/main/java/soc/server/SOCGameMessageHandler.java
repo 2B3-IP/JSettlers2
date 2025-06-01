@@ -145,7 +145,29 @@ public class SOCGameMessageHandler
                             d = Integer.parseInt(parts[2]);
                             UnityBridge.sendBuildRoad(x, y, d);
                             break;
-                    }
+                    }}
+                    else
+                    {switch (pieceType) {
+                        case SOCPlayingPiece.SETTLEMENT:
+                            parts = CoordBridge.getVertex(coord).split(" ");
+                            x = Integer.parseInt(parts[0]);
+                            y = Integer.parseInt(parts[1]);
+                            d = Integer.parseInt(parts[2]);
+                            
+                            break;
+                        case SOCPlayingPiece.CITY:
+                            parts = CoordBridge.getVertex(coord).split(" ");
+                            x = Integer.parseInt(parts[0]);
+                            y = Integer.parseInt(parts[1]);
+                            d = Integer.parseInt(parts[2]);
+                            break;
+                        case SOCPlayingPiece.ROAD:
+                            parts = CoordBridge.getEdge(coord).split(" ");
+                            x = Integer.parseInt(parts[0]);
+                            y = Integer.parseInt(parts[1]);
+                            d = Integer.parseInt(parts[2]);
+                            System.out.println("x: "+x+"y: "+y+"d: "+d);
+                            break;}
                 }
 
                 break;

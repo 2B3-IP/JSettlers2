@@ -6525,7 +6525,7 @@ public class SOCGame implements Serializable, Cloneable
             while ((line = in.readLine()) != null) {
                 String[] parts = line.split(" ");
                 String keyword = parts[0];
-                System.out.println(line);
+                System.out.println(line+"rup pizza");
                 switch (keyword) {
                     case "DICE_NUMBER":
                         return Integer.parseInt(parts[1]);
