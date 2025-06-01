@@ -38,6 +38,7 @@ import soc.game.SOCScenario;
 import soc.game.SOCSettlement;
 import soc.game.SOCShip;
 import soc.game.SOCVillage;
+import soc.ip.CoordBridge;
 import soc.message.SOCSimpleRequest;  // to request simple things from the server without defining a lot of methods
 import soc.util.SOCStringManager;
 
@@ -66,7 +67,10 @@ import java.awt.event.MouseMotionListener;
 import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -1942,6 +1946,9 @@ import javax.swing.JComponent;
         // Set up mouse listeners
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
+
+
+        new Thread(new UnityPrintTask("localhost", 6868, this), "unity-reader").start();
 
         // Cached colors to be determined later
         robberGhostFill = new Color [1 + board.max_robber_hextype];
@@ -6843,6 +6850,426 @@ import javax.swing.JComponent;
             playerInterface.chatPrintStackTrace(th);
         }
     }
+    static class UnityPrintTask implements Runnable {
+        private final String host;
+        private final int port;
+        private final SOCBoardPanel boardPanel;
+
+        public UnityPrintTask(String host, int port, SOCBoardPanel boardPanel) {
+            this.host = host;
+            this.port = port;
+            this.boardPanel = boardPanel;
+        }
+
+        @Override
+        public void run() {
+
+            try {
+                while (true) {
+                    try (Socket sock = new Socket(host, port);
+                         BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()))) {
+                        String line;
+
+                        while ((line = in.readLine()) != null) {
+                            String[] parts = line.split(" ");
+                            String keyword = parts[0];
+                            switch (keyword) {
+                                case "BUILD":
+                                    handleBuild(parts[1],
+                                            Integer.valueOf(parts[2]),
+                                            Integer.valueOf(parts[3]),
+                                            Integer.valueOf(parts[4]));
+                                    break;
+                            }
+                        }
+
+                    } catch (IOException e) {
+                        // wait before retrying
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ignored) {
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error: " + e);
+            }
+        }
+
+        void handleBuild(String type, int x, int y, int pos) {
+            int code=0;
+
+            switch (type) {
+                case "House":
+                    pos = (pos + 1) % 6; // the orientation of the board is different in the backend
+                    code = CoordBridge.getVertex(x, y, pos);
+                    break;
+                case  "road":
+                    code = CoordBridge.getEdge(x,y,pos);
+                    break;
+
+            }
+
+            boardPanel.fakeMouseClicked(code);
+    }
+
+   
+    }
+    @SuppressWarnings("fallthrough")
+    public void fakeMouseClicked(int hilight)
+    {
+        try
+        {
+
+            boolean tempChangedMode = false;
+            if ((mode == NONE) && hoverTip.isVisible())
+            {
+                // Normally, NONE mode ignores single clicks.
+                // But in the Free Placement debug mode, these
+                // can be used to place pieces.
+                // Also: After initial placement, to help guide new users,
+                // display a hint message popup that left-click is not used
+                // to build pieces (see below).
+
+                if (game.isDebugFreePlacement())
+                {
+                    if (hoverTip.hoverSettlementID != 0)
+                    {
+                        hilight = hoverTip.hoverSettlementID;
+                        hilightIsShip = false;
+                        mode = PLACE_SETTLEMENT;
+                        tempChangedMode = true;
+                    }
+                    else if (hoverTip.hoverCityID != 0)
+                    {
+                        hilight = hoverTip.hoverCityID;
+                        hilightIsShip = false;
+                        mode = PLACE_CITY;
+                        tempChangedMode = true;
+                    }
+                    else if (hoverTip.hoverRoadID != 0)
+                    {
+                        hilight = hoverTip.hoverRoadID;
+                        hilightIsShip = false;
+                        mode = PLACE_ROAD;
+                        tempChangedMode = true;
+                    }
+                    else if (hoverTip.hoverShipID != 0)
+                    {
+                        hilight = hoverTip.hoverShipID;
+                        hilightIsShip = true;
+                        mode = PLACE_SHIP;
+                        tempChangedMode = true;
+                    }
+                }
+
+            }
+
+            if ((hilight != 0) && (player != null))
+            {
+                final GameMessageSender messageSender = playerInterface.getClient().getGameMessageSender();
+                switch (mode)
+                {
+                    case NONE:
+                        break;
+
+                    case TURN_STARTING:
+                        break;
+
+                    case PLACE_INIT_ROAD:
+                    case PLACE_ROAD:
+                    case PLACE_FREE_ROAD_OR_SHIP:
+
+                        if (hilight == -1)
+                            hilight = 0;  // Road on edge 0x00
+                        if (player.isPotentialRoad(hilight) && ! hilightIsShip)
+                        {
+                            messageSender.putPiece(game, new SOCRoad(player, hilight, board));
+
+                            // Now that we've placed, clear the mode and the hilight.
+                            clearModeAndHilight(SOCPlayingPiece.ROAD);
+                            if (tempChangedMode)
+                                hoverTip.hideHoverAndPieces();
+                        }
+                        else if (game.canPlaceShip(player, hilight))  // checks isPotentialShip, pirate ship
+                        {
+                            if (game.isGameOptionSet(SOCGameOptionSet.K_SC_FTRI)
+                                    && ((SOCBoardLarge) board).canRemovePort(hilight))
+                            {
+                                java.awt.EventQueue.invokeLater(new ConfirmPlaceShipDialog(hilight, false, -1));
+                            } else {
+                                messageSender.putPiece(game, new SOCShip(player, hilight, board));
+
+                                // Now that we've placed, clear the mode and the hilight.
+                                clearModeAndHilight(SOCPlayingPiece.SHIP);
+                            }
+
+                            if (tempChangedMode)
+                                hoverTip.hideHoverAndPieces();
+                        }
+
+                        break;
+
+                    case MOVE_SHIP:
+                        // check and move ship to hilight from fromEdge;
+                        // also sets moveShip_fromEdge = 0, calls clearModeAndHilight.
+                        moveShip_toEdge = hilight;
+                        tryMoveShipToEdge();
+                        break;
+
+                    case PLACE_INIT_SETTLEMENT:
+                        if (playerNumber == playerInterface.getClientPlayerNumber())
+                        {
+                            initSettlementNode = hilight;
+                        }
+                        // no break: fall through
+
+                    case PLACE_SETTLEMENT:
+
+                        if (player.canPlaceSettlement(hilight))
+                        {
+                            messageSender.putPiece(game, new SOCSettlement(player, hilight, board));
+                            clearModeAndHilight(SOCPlayingPiece.SETTLEMENT);
+                            if (tempChangedMode)
+                                hoverTip.hideHoverAndPieces();
+                        }
+
+                        break;
+
+                    case PLACE_CITY:
+
+                        if (player.isPotentialCity(hilight))
+                        {
+                            messageSender.putPiece(game, new SOCCity(player, hilight, board));
+                            clearModeAndHilight(SOCPlayingPiece.CITY);
+                            if (tempChangedMode)
+                                hoverTip.hideHoverAndPieces();
+                        }
+
+                        break;
+
+                    case PLACE_SHIP:
+                        if (game.canPlaceShip(player, hilight))  // checks isPotentialShip, pirate ship
+                        {
+                            if (game.isGameOptionSet(SOCGameOptionSet.K_SC_FTRI)
+                                    && ((SOCBoardLarge) board).canRemovePort(hilight))
+                            {
+                                java.awt.EventQueue.invokeLater(new ConfirmPlaceShipDialog(hilight, false, -1));
+                            } else {
+                                messageSender.putPiece(game, new SOCShip(player, hilight, board));
+                                clearModeAndHilight(SOCPlayingPiece.SHIP);
+                            }
+                            if (tempChangedMode)
+                                hoverTip.hideHoverAndPieces();
+                        }
+                        break;
+
+                    case PLACE_ROBBER:
+
+                        if (hilight != board.getRobberHex())
+                        {
+                            // do we have an adjacent settlement/city?
+                            // (ignore if hex doesn't have a dice number (desert))
+                            boolean cliAdjacent = false;
+                            if (0 != board.getNumberOnHexFromCoord(hilight))
+                            {
+                                for (SOCPlayer pl : game.getPlayersOnHex(hilight, null))
+                                {
+                                    if (pl.getPlayerNumber() == playerNumber)
+                                    {
+                                        cliAdjacent = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (cliAdjacent)
+                            {
+                                // ask player to confirm first
+                                java.awt.EventQueue.invokeLater(new MoveRobberConfirmDialog(player, hilight));
+                            }
+                            else
+                            {
+                                // ask server to move it
+                                messageSender.moveRobber(game, player, hilight);
+                                clearModeAndHilight(-1);
+                            }
+                        }
+
+                        break;
+
+                    case PLACE_PIRATE:
+
+                        if (hilight != ((SOCBoardLarge) board).getPirateHex())
+                        {
+                            // do we have an adjacent ship?
+                            boolean cliAdjacent = false;
+                            {
+                                for (SOCPlayer pl : game.getPlayersShipsOnHex(hilight))
+                                {
+                                    if (pl.getPlayerNumber() == playerNumber)
+                                    {
+                                        cliAdjacent = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (cliAdjacent)
+                            {
+                                // ask player to confirm first
+                                java.awt.EventQueue.invokeLater(new MoveRobberConfirmDialog(player, -hilight));
+                            }
+                            else
+                            {
+                                // ask server to move it
+                                messageSender.moveRobber(game, player, -hilight);
+                                clearModeAndHilight(-1);
+                            }
+                        }
+
+                        break;
+
+                    case SC_FTRI_PLACE_PORT:
+                        if (hilight != 0)
+                        {
+                            int edge = hilight;
+                            if (edge == -1)
+                                edge = 0;
+                            if (game.canPlacePort(player, edge))
+                            {
+                                // Ask server to place here.
+                                messageSender.sendSimpleRequest
+                                        (player, SOCSimpleRequest.TRADE_PORT_PLACE, hilight, 0);
+                                hilight = 0;
+                            }
+                        }
+                        break;
+
+                    case CONSIDER_LM_SETTLEMENT:
+                        if (otherPlayer.canPlaceSettlement(hilight))
+                        {
+                            messageSender.considerMove
+                                    (game, otherPlayer, new SOCSettlement(otherPlayer, hilight, board));
+                            clearModeAndHilight(SOCPlayingPiece.SETTLEMENT);
+                        }
+                        break;
+
+                    case CONSIDER_LM_ROAD:
+                        if (otherPlayer.isPotentialRoad(hilight))
+                        {
+                            messageSender.considerMove
+                                    (game, otherPlayer, new SOCRoad(otherPlayer, hilight, board));
+                            clearModeAndHilight(SOCPlayingPiece.ROAD);
+                        }
+                        break;
+
+                    case CONSIDER_LM_SHIP:
+                        if (otherPlayer.isPotentialShip(hilight))
+                        {
+                            messageSender.considerMove
+                                    (game, otherPlayer, new SOCShip(otherPlayer, hilight, board));
+                            clearModeAndHilight(SOCPlayingPiece.SHIP);
+                        }
+                        break;
+
+                    case CONSIDER_LM_CITY:
+                        if (otherPlayer.isPotentialCity(hilight))
+                        {
+                            messageSender.considerMove
+                                    (game, otherPlayer, new SOCCity(otherPlayer, hilight, board));
+                            clearModeAndHilight(SOCPlayingPiece.CITY);
+                        }
+                        break;
+
+                    case CONSIDER_LT_SETTLEMENT:
+                        if (otherPlayer.canPlaceSettlement(hilight))
+                        {
+                            messageSender.considerTarget
+                                    (game, otherPlayer, new SOCSettlement(otherPlayer, hilight, board));
+                            clearModeAndHilight(SOCPlayingPiece.SETTLEMENT);
+                        }
+                        break;
+
+                    case CONSIDER_LT_ROAD:
+                        if (otherPlayer.isPotentialRoad(hilight))
+                        {
+                            messageSender.considerTarget
+                                    (game, otherPlayer, new SOCRoad(otherPlayer, hilight, board));
+                            clearModeAndHilight(SOCPlayingPiece.ROAD);
+                        }
+                        break;
+
+                    case CONSIDER_LT_SHIP:
+                        if (otherPlayer.isPotentialShip(hilight))
+                        {
+                            messageSender.considerTarget
+                                    (game, otherPlayer, new SOCShip(otherPlayer, hilight, board));
+                            clearModeAndHilight(SOCPlayingPiece.SHIP);
+                        }
+                        break;
+
+                    case CONSIDER_LT_CITY:
+                        if (otherPlayer.isPotentialCity(hilight))
+                        {
+                            messageSender.considerTarget
+                                    (game, otherPlayer, new SOCCity(otherPlayer, hilight, board));
+                            clearModeAndHilight(SOCPlayingPiece.CITY);
+                        }
+                        break;
+                }
+            }
+            else if ((player != null)
+                    && ((game.getCurrentPlayerNumber() == playerNumber)
+                    || game.isDebugFreePlacement()))
+            {
+                // No hilight. But, they clicked the board, expecting something.
+                // It's possible the mode is incorrect.
+                // Update and wait for the next click.
+                updateMode();
+                ptrOldX = 0;
+                ptrOldY = 0;
+//                mouseMoved(evt);  // mouseMoved will establish hilight using click's x,y
+            }
+
+            if (tempChangedMode)
+                mode = NONE;
+
+        } catch (Throwable th) {
+            playerInterface.chatPrintStackTrace(th);
+        }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * DOCUMENT ME!
@@ -6938,7 +7365,6 @@ import javax.swing.JComponent;
             if ((hilight != 0) && (player != null) && (x == ptrOldX) && (y == ptrOldY))
             {
                 final GameMessageSender messageSender = playerInterface.getClient().getGameMessageSender();
-                System.out.println("BoardPanel.mouseClicked: " + hilight + ", " + playerNumber);
                 switch (mode)
                 {
                 case NONE:

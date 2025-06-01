@@ -8535,15 +8535,15 @@ public class SOCServer extends Server
             robotJoinRequests.put(gaName, robotsRequested);
 
             // now, make the requests
-            for (int i = 0; i < ga.maxPlayers; ++i)
-            {
-                if (robotSeatsConns[i] != null)
+                for (int i = 0; i < ga.maxPlayers; ++i)
                 {
-                    // D.ebugPrintln("@@@ JOIN GAME REQUEST for " + robotSeatsConns[i].getData());
-                    messageToPlayer
-                        (robotSeatsConns[i], gaName, PN_OBSERVER, new SOCBotJoinGameRequest(gaName, i, gaOpts));
+                    if (robotSeatsConns[i] != null)
+                    {
+//                     D.ebugPrintln("@@@ JOIN GAME REQUEST for " + robotSeatsConns[i].getData());
+                        messageToPlayer
+                                (robotSeatsConns[i], gaName, PN_OBSERVER, new SOCBotJoinGameRequest(gaName, i, gaOpts));
+                    }
                 }
-            }
 
             return true;
         } else {
@@ -9470,7 +9470,7 @@ public class SOCServer extends Server
             /**
              * send all the private information
              * and (if applicable) prompt for discard or other decision
-             */System.out.println("CHECK STARTGAME: " + ga.getPlayerCount() + " jucători, state = " + ga.getGameState());
+             */
             GameHandler hand = gameList.getGameTypeHandler(gaName);
             if (hand != null)
                 hand.sitDown_sendPrivateInfo(ga, c, pn, sendLikeRejoin);

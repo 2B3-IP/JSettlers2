@@ -1244,6 +1244,7 @@ import javax.swing.UIManager;
         // set the starting state of the panel
         removePlayer();
 
+        messageSender.startGame(game);
     }
 
     /** Color square label created by most recent call to {@link #createAndAddResourceColorSquare(Color, String)}. */
@@ -1314,6 +1315,7 @@ import javax.swing.UIManager;
      */
     public void actionPerformed(ActionEvent e)
     {
+
         try {
         String target = e.getActionCommand();
 
@@ -2112,7 +2114,7 @@ import javax.swing.UIManager;
      * @see #renameSitButLock()
      */
     public void addSitButton(boolean clientHasSatAlready)
-    {System.out.println("addSitButton called: clientHasSatAlready = " + clientHasSatAlready + ", playerIsClient = " + playerIsClient);
+    {
         if (!clientHasSatAlready && playerIsClient) {
 
             for (int i = 0; i < SOCGame.MAXPLAYERS; i++) {
@@ -2139,7 +2141,7 @@ import javax.swing.UIManager;
             }
         }
         else if (clientHasSatAlready && ! sitButIsLock)
-        {System.out.println("addSitButton called: clientHasSatAlready = " + clientHasSatAlready + ", playerIsClient = " + playerIsClient);
+        {
             renameSitButLock();
         }
 
@@ -2452,10 +2454,6 @@ import javax.swing.UIManager;
     {
         playerIsClient = true;
         playerInterface.setClientHand(this);
-        System.out.println("CLIENT player added with name: " + name);
-        System.out.println("playerIsClient: " + playerIsClient);
-        System.out.println("Game state: " + game.getGameState());
-        System.out.println("Current player number: " + game.getCurrentPlayerNumber());
     }
         // hide temporarily to avoid flicker
         if (blankStandIn != null)
