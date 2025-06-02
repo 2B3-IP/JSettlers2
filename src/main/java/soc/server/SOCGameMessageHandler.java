@@ -145,29 +145,7 @@ public class SOCGameMessageHandler
                             d = Integer.parseInt(parts[2]);
                             UnityBridge.sendBuildRoad(x, y, d);
                             break;
-                    }}
-                    else
-                    {switch (pieceType) {
-                        case SOCPlayingPiece.SETTLEMENT:
-                            parts = CoordBridge.getVertex(coord).split(" ");
-                            x = Integer.parseInt(parts[0]);
-                            y = Integer.parseInt(parts[1]);
-                            d = Integer.parseInt(parts[2]);
-                            
-                            break;
-                        case SOCPlayingPiece.CITY:
-                            parts = CoordBridge.getVertex(coord).split(" ");
-                            x = Integer.parseInt(parts[0]);
-                            y = Integer.parseInt(parts[1]);
-                            d = Integer.parseInt(parts[2]);
-                            break;
-                        case SOCPlayingPiece.ROAD:
-                            parts = CoordBridge.getEdge(coord).split(" ");
-                            x = Integer.parseInt(parts[0]);
-                            y = Integer.parseInt(parts[1]);
-                            d = Integer.parseInt(parts[2]);
-                            System.out.println("x: "+x+"y: "+y+"d: "+d);
-                            break;}
+                    }
                 }
 
                 break;
@@ -190,11 +168,26 @@ public class SOCGameMessageHandler
                     }
                 }
                 break;
+            case SOCMessage.ROLLDICE:
+
+                //createNewGameEventRecord();
+                //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
+                handleROLLDICE(game, connection, (SOCRollDice) message);
+
+                //ga = (SOCGame)gamesData.get(((SOCRollDice)mes).getGame());
+                //currentGameEventRecord.setSnapshot(ga);
+                //saveCurrentGameEventRecord(((SOCRollDice)mes).getGame());
+                break;
 
             case SOCMessage.DICERESULT:
                 SOCDiceResult dr = (SOCDiceResult) message;
                 int diceSum = dr.getResult();
-                if (diceSum >= 2 && diceSum <= 12)  // opțional: evită cazul -1 (reset)
+                if (diceSum >= 2 && diceSum <= 12);  // opțional: evită cazul -1 (reset)
+
+//                SOCEndTurn t = (SOCEndTurn) message;
+//                handleENDTURN(game, connection, t);
+//                if(((SOCPutPiece) message).getPlayerNumber()!=0)
+//                    UnityBridge.sendEndTurn();
                 break;
 
             case SOCMessage.DISCARD:
@@ -216,7 +209,8 @@ public class SOCGameMessageHandler
             case SOCMessage.ENDTURN:
                 SOCEndTurn et = (SOCEndTurn) message;
                 handleENDTURN(game, connection, et);
-                UnityBridge.sendEndTurn();
+                if(game.getCurrentPlayerNumber()!=0)
+                    UnityBridge.sendEndTurn();
                 break;
 
             case SOCMessage.CHOOSEPLAYER:

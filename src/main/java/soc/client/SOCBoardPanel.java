@@ -6854,6 +6854,7 @@ import javax.swing.JComponent;
         private final String host;
         private final int port;
         private final SOCBoardPanel boardPanel;
+        private SOCPlayerInterface playerInterface;
 
         public UnityPrintTask(String host, int port, SOCBoardPanel boardPanel) {
             this.host = host;
@@ -6873,8 +6874,12 @@ import javax.swing.JComponent;
                         while ((line = in.readLine()) != null) {
                             String[] parts = line.split(" ");
                             String keyword = parts[0];
+                            System.out.println(line);
                             // BUY ROAD  1 1 1
                             switch (keyword) {
+                                case "END_TURN":
+                                    fakeButton2Chosen(boardPanel.playerInterface);
+                                    break;
                                 case "BUILD":
                                     handleBuild(parts[1],
                                             Integer.valueOf(parts[2]),
@@ -6882,7 +6887,6 @@ import javax.swing.JComponent;
                                             Integer.valueOf(parts[4]));
                                     break;
                                 case "BUY":
-                                    ///  your code to switch state
                                     handleBuy(parts[1]);
                                     handleBuild(parts[1],
                                             Integer.valueOf(parts[2]),
@@ -6923,6 +6927,8 @@ import javax.swing.JComponent;
             }
         }
 
+
+
         void handleBuild(String type, int x, int y, int pos) {
             int code=0;
             //type  to upper
@@ -6957,8 +6963,19 @@ import javax.swing.JComponent;
     }
 
 
+
+        public void fakeButton2Chosen(SOCPlayerInterface playerInterface)
+        {
+
+            final GameMessageSender messageSender = playerInterface.getClient().getGameMessageSender();
+            final SOCGame game = playerInterface.getGame();
+            messageSender.endTurn(game);
+
+        }
+
    
     }
+
     @SuppressWarnings("fallthrough")
     public void fakeMouseClicked(int hilight)
     {

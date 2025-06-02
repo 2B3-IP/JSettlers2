@@ -26,10 +26,10 @@ package soc.game;
 
 import soc.UnityBridge;
 import soc.message.*;
-import soc.ip.CoordBridge;
+
 import java.io.*;
 import java.net.Socket;
-import soc.ip.Point;
+
 import soc.disableDebug.D;
 import soc.game.GameAction.ActionType;
 import soc.game.GameAction.EffectType;
@@ -6520,25 +6520,31 @@ public class SOCGame implements Serializable, Cloneable
      */
 
     public static int GetValueFromBackend() {
-        try (Socket socket = new Socket("localhost", 6969); BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                String[] parts = line.split(" ");
-                String keyword = parts[0];
-                System.out.println(line+"rup pizza");
-                switch (keyword) {
-                    case "DICE_NUMBER":
-                        return Integer.parseInt(parts[1]);
-                    default:
-                        throw new IOException("Unknown keyword: " + keyword);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        while (true) {
+            try (Socket socket = new Socket("localhost", 6969);
+                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-        return 6; // fallback dacă ceva nu merge
+                String line;
+                while ((line = in.readLine()) != null) {
+                    String[] parts = line.split(" ");
+                    String keyword = parts[0];
+                    System.out.println(line);
+                    if ("DICE_NUMBER".equals(keyword)) {
+                        return Integer.parseInt(parts[1]);
+                    } else {
+                        System.err.println("Unknown keyword: " + keyword);
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Connection failed or error occurred: " + e.getMessage());
+                // Optionally wait a bit before retrying
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {}
+            }
+        }
     }
+
 
 
 
@@ -6565,7 +6571,6 @@ public class SOCGame implements Serializable, Cloneable
               && (( ! isGameOptionSet("N7")) || (roundCount > getGameOptionIntValue("N7")));
 
         int die1, die2;
-        System.out.println("a mers ");
         do
         {
 //            if (rand.nextBoolean())  // JM TEMP - try trigger bot discard-no-move-robber bug
@@ -6573,11 +6578,11 @@ public class SOCGame implements Serializable, Cloneable
 //                die1 = 0; die2 = 7;
 //            } else {
             die1 = Math.abs(rand.nextInt() % 6) + 1;
+
             die2 = Math.abs(rand.nextInt() % 6) + 1;
 //            }
 
             currentDice = GetValueFromBackend();
-            System.out.println("a mers "+ currentDice);
         } while ((currentDice == 7) && ! okToRoll7);
 
         currentRoll.update(die1, die2);  // also clears currentRoll.cloth (SC_CLVI)
@@ -8682,10 +8687,10 @@ public class SOCGame implements Serializable, Cloneable
      */
     public void buyRoad(final int pn)
     {
-
-        if(pn!=0){
-            pad
-        }
+//
+//        if(pn!=0){
+//            pad
+//        }
 
         SOCResourceSet resources = players[pn].getResources();
         resources.subtract(1, SOCResourceConstants.CLAY);

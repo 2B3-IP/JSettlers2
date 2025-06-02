@@ -60,7 +60,7 @@ public final class UnityBridge {
     }
 
     public static void sendDiceRoll(int dice) {
-        send("DICE_NUMBER " + dice);
+//        send("DICE_NUMBER " + dice);
     }
 
     public static void sendDiscard(int[] res) {
@@ -78,9 +78,9 @@ public final class UnityBridge {
     }
 
     public static void sendMakeOffer(int[] off) {
-        StringBuilder sb = new StringBuilder("MAKEOFFER");
-        for (int r : off) sb.append(" ").append(r);
-        send(sb.toString());
+//        StringBuilder sb = new StringBuilder("MAKEOFFER");
+//        for (int r : off) sb.append(" ").append(r);
+//        send(sb.toString());
     }
 
     public static void sendClearOffer() {
@@ -116,9 +116,9 @@ public final class UnityBridge {
     }
 
     public static void sendPickResources(int[] p) {
-        StringBuilder sb = new StringBuilder("PICKRESOURCES");
-        for (int r : p) sb.append(" ").append(r);
-        send(sb.toString());
+//        StringBuilder sb = new StringBuilder("PICKRESOURCES");
+//        for (int r : p) sb.append(" ").append(r);
+//        send(sb.toString());
     }
 
     public static void sendPickResourceType(int t) {
@@ -126,7 +126,7 @@ public final class UnityBridge {
     }
 
     public static void sendDebugFreePlace(int x, int y) {
-        send("DEBUGFREEPLACE " + x + " " + y);
+//        send("DEBUGFREEPLACE " + x + " " + y);
     }
 
     public static void sendSimpleRequest(int t) {
@@ -146,7 +146,7 @@ public final class UnityBridge {
     }
 
     public static void sendSpecialItem(int id) {
-        send("SETSPECIALITEM " + id);
+//        send("SETSPECIALITEM " + id);
     }
 
     public static void sendGameStats() {
