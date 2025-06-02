@@ -24,6 +24,7 @@
  **/
 package soc.game;
 
+import soc.UnityBridge;
 import soc.message.*;
 import soc.ip.CoordBridge;
 import java.io.*;
@@ -8681,6 +8682,11 @@ public class SOCGame implements Serializable, Cloneable
      */
     public void buyRoad(final int pn)
     {
+
+        if(pn!=0){
+            pad
+        }
+
         SOCResourceSet resources = players[pn].getResources();
         resources.subtract(1, SOCResourceConstants.CLAY);
         resources.subtract(1, SOCResourceConstants.WOOD);

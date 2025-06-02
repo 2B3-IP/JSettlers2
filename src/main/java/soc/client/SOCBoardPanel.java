@@ -6873,6 +6873,7 @@ import javax.swing.JComponent;
                         while ((line = in.readLine()) != null) {
                             String[] parts = line.split(" ");
                             String keyword = parts[0];
+                            // BUY ROAD  1 1 1
                             switch (keyword) {
                                 case "BUILD":
                                     handleBuild(parts[1],
@@ -6882,29 +6883,30 @@ import javax.swing.JComponent;
                                     break;
                                 case "BUY":
                                     ///  your code to switch state
+                                    handleBuy(parts[1]);
                                     handleBuild(parts[1],
                                             Integer.valueOf(parts[2]),
                                             Integer.valueOf(parts[3]),
                                             Integer.valueOf(parts[4]));
-                             case "MOVEROBBER":
-                                // Expect exactly: "MOVEROBBER <hexX> <hexY>"
-                                if (parts.length < 3) {
-                                    System.err.println("Malformed MOVEROBBER: " + line);
                                     break;
-                                }
-                                int rx = Integer.parseInt(parts[1]);
-                                int ry = Integer.parseInt(parts[2]);
-                                Integer base = CoordBridge.backToAiCode.get(new soc.ip.Point<>(rx, ry));
+                                case "MOVEROBBER":
+                                    // Expect exactly: "MOVEROBBER <hexX> <hexY>"
+                                    if (parts.length < 3) {
+                                        System.err.println("Malformed MOVEROBBER: " + line);
+                                        break;
+                                    }
+                                    int rx = Integer.parseInt(parts[1]);
+                                    int ry = Integer.parseInt(parts[2]);
+                                    Integer base = CoordBridge.backToAiCode.get(new soc.ip.Point<>(rx, ry));
 
-                                if (base == null) {
-                                    System.err.println("Unknown hex (" + rx + "," + ry + ")");
+                                    if (base == null) {
+                                        System.err.println("Unknown hex (" + rx + "," + ry + ")");
+                                        break;
+                                    }
+                                    int hilight = base.intValue();
+                                    boardPanel.mode = SOCBoardPanel.PLACE_ROBBER;
+                                    boardPanel.fakeMouseClicked(hilight);
                                     break;
-                                }
-                                int hilight = base.intValue();
-                                boardPanel.mode = SOCBoardPanel.PLACE_ROBBER;
-                                boardPanel.fakeMouseClicked(hilight);
-                                break;
-
                             }
                         }
 
@@ -6923,13 +6925,15 @@ import javax.swing.JComponent;
 
         void handleBuild(String type, int x, int y, int pos) {
             int code=0;
+            //type  to upper
 
+            type = type.toUpperCase();
             switch (type) {
-                case "House":
+                case "HOUSE":
                     pos = (pos + 1) % 6; // the orientation of the board is different in the backend
                     code = CoordBridge.getVertex(x, y, pos);
                     break;
-                case  "road":
+                case "ROAD":
                     code = CoordBridge.getEdge(x,y,pos);
                     break;
 
@@ -6937,6 +6941,21 @@ import javax.swing.JComponent;
 
             boardPanel.fakeMouseClicked(code);
     }
+    void handleBuy(String type) {
+            type = type.toUpperCase();
+            switch (type){
+                case "ROAD":
+                    boardPanel.game.buyRoad(0);
+                    break;
+                    case "HOUSE":
+                      boardPanel.game.buySettlement(0);
+                      break;
+                case "CITY":
+                    boardPanel.game.buyCity(0);
+                    break;
+            }
+    }
+
 
    
     }
