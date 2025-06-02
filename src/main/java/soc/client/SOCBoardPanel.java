@@ -6880,6 +6880,9 @@ import javax.swing.JComponent;
                                             Integer.valueOf(parts[3]),
                                             Integer.valueOf(parts[4]));
                                     break;
+                                case "BUY":
+                                    handleBuy(parts[1], Integer.valueOf(parts[2]));
+                                    break;
                             }
                         }
 
@@ -6893,6 +6896,19 @@ import javax.swing.JComponent;
                 }
             } catch (Exception e) {
                 System.out.println("Error: " + e);
+            }
+        }
+
+        void handleBuy(String type, int playerId) {
+            switch (type) {
+                case "road":
+                    boardPanel.game.buyRoad(playerId);
+                    break;
+                case "House":
+                    boardPanel.game.buySettlement(playerId);
+                    break;
+                case "City":
+                    boardPanel.game.buyCity(playerId);
             }
         }
 

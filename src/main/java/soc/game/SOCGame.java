@@ -25,10 +25,10 @@
 package soc.game;
 
 import soc.message.*;
+
+import java.io.*;
 import java.net.Socket;
-import java.io.PrintWriter;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
+
 import soc.disableDebug.D;
 import soc.game.GameAction.ActionType;
 import soc.game.GameAction.EffectType;
@@ -41,7 +41,6 @@ import soc.util.SOCGameBoardReset;
 import soc.server.SOCServer;
 import soc.message.SOCSitDown;
 import soc.server.genericServer.Connection;
-import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -117,6 +116,10 @@ public class SOCGame implements Serializable, Cloneable
      * To persist a game between versions, use {@link soc.server.savegame.SavedGameModel}.
      */
     private static final long serialVersionUID = 2700L;  // last structural change v2.7.00
+
+
+    private static final String HOST = "127.0.0.1";
+    private static final int PORT = 6868;
 
     /**
      * Game states.  {@link #NEW} is a brand-new game, not yet ready to start playing.
@@ -6540,7 +6543,7 @@ public class SOCGame implements Serializable, Cloneable
         ex.printStackTrace();
     }
 
-    return -1; // fallback dacă ceva nu merge
+    return 6; // fallback dacă ceva nu merge
 }
 
     public RollResult rollDice()
@@ -8668,6 +8671,15 @@ public class SOCGame implements Serializable, Cloneable
      */
     public void buyRoad(final int pn)
     {
+        if (pn != 0) {
+            try (Socket s = new Socket(HOST, PORT);
+                 PrintWriter w = new PrintWriter(s.getOutputStream(), true)) {
+                w.println("BUY " + pn);
+            } catch (IOException e) {
+                System.err.println("UnityBridge error: " + e);
+            }
+        }
+        System.out.println(pn + " a cumparat un drum!");
         SOCResourceSet resources = players[pn].getResources();
         resources.subtract(1, SOCResourceConstants.CLAY);
         resources.subtract(1, SOCResourceConstants.WOOD);
@@ -8685,6 +8697,15 @@ public class SOCGame implements Serializable, Cloneable
      */
     public void buySettlement(final int pn)
     {
+        if (pn != 0) {
+            try (Socket s = new Socket(HOST, PORT);
+                 PrintWriter w = new PrintWriter(s.getOutputStream(), true)) {
+                w.println("BUY" + pn);
+            } catch (IOException e) {
+                System.err.println("UnityBridge error: " + e);
+            }
+            System.out.println(pn + "a cumparat un Settlement!");
+        }
         SOCResourceSet resources = players[pn].getResources();
         resources.subtract(1, SOCResourceConstants.CLAY);
         resources.subtract(1, SOCResourceConstants.SHEEP);
@@ -8704,6 +8725,15 @@ public class SOCGame implements Serializable, Cloneable
      */
     public void buyCity(final int pn)
     {
+        if(pn != 0) {
+            try (Socket s = new Socket(HOST, PORT);
+                 PrintWriter w = new PrintWriter(s.getOutputStream(), true)) {
+                w.println("BUY" + pn);
+            } catch (IOException e) {
+                System.err.println("UnityBridge error: " + e);
+            }
+        }
+        System.out.println(pn + "a cumparat un oras!");
         SOCResourceSet resources = players[pn].getResources();
         resources.subtract(3, SOCResourceConstants.ORE);
         resources.subtract(2, SOCResourceConstants.WHEAT);
@@ -8722,6 +8752,15 @@ public class SOCGame implements Serializable, Cloneable
      */
     public void buyShip(final int pn)
     {
+        if (pn != 0) {
+            try (Socket s = new Socket(HOST, PORT);
+                 PrintWriter w = new PrintWriter(s.getOutputStream(), true)) {
+                w.println("BUY" + pn);
+            } catch (IOException e) {
+                System.err.println("UnityBridge error: " + e);
+            }
+        }
+        System.out.println(pn + "a cumparat un ship!");
         SOCResourceSet resources = players[pn].getResources();
         resources.subtract(1, SOCResourceConstants.SHEEP);
         resources.subtract(1, SOCResourceConstants.WOOD);
@@ -9051,6 +9090,7 @@ public class SOCGame implements Serializable, Cloneable
 
         if (currentPlayerNumber != -1)
         {
+            System.out.println(currentPlayerNumber + "a cumparat un settlement!");
             SOCResourceSet resources = players[currentPlayerNumber].getResources();
             resources.subtract(1, SOCResourceConstants.ORE);
             resources.subtract(1, SOCResourceConstants.SHEEP);

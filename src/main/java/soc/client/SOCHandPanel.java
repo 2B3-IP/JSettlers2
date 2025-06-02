@@ -1244,7 +1244,7 @@ import javax.swing.UIManager;
         // set the starting state of the panel
         removePlayer();
 
-        messageSender.startGame(game);
+        //messageSender.startGame(game);
     }
 
     /** Color square label created by most recent call to {@link #createAndAddResourceColorSquare(Color, String)}. */
