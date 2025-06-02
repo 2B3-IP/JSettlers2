@@ -24,11 +24,12 @@
  **/
 package soc.game;
 
+import soc.UnityBridge;
 import soc.message.*;
+
+import java.io.*;
 import java.net.Socket;
-import java.io.PrintWriter;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
+
 import soc.disableDebug.D;
 import soc.game.GameAction.ActionType;
 import soc.game.GameAction.EffectType;
@@ -41,7 +42,6 @@ import soc.util.SOCGameBoardReset;
 import soc.server.SOCServer;
 import soc.message.SOCSitDown;
 import soc.server.genericServer.Connection;
-import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6518,52 +6518,48 @@ public class SOCGame implements Serializable, Cloneable
      *         is called again.
      * @see #getResourcesGainedFromRoll(SOCPlayer, int)
      */
+
     public static int GetValueFromBackend() {
-    try (Socket socket = new Socket("localhost", 6969);
-         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        while (true) {
+            try (Socket socket = new Socket("localhost", 6969);
+                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-<<<<<<< Updated upstream
-        // Trimite comanda
-        out.println("GET_DICE");
-
-        // Primește răspunsul
-        String response = in.readLine();
-
-        if (response != null && response.startsWith("DICE_NUMBER")) {
-            String[] parts = response.split(" ");
-            return Integer.parseInt(parts[1]);
-        } else {
-            System.out.println("Unexpected response: " + response);
-=======
                 String line;
                 while ((line = in.readLine()) != null) {
                     String[] parts = line.split(" ");
                     String keyword = parts[0];
                     System.out.println(line);
                     if ("DICE_NUMBER".equals(keyword)) {
-                        // return Integer.parseInt(parts[1]);
-                        return 7;
+                        return Integer.parseInt(parts[1]);
                     } else {
                         System.err.println("Unknown keyword: " + keyword);
                     }
                 }
             } catch (Exception e) {
-                System.err.println("Connection failed or error occurred: " + e.getMessage());
+//                System.err.println("Connection failed or error occurred: " + e.getMessage());
                 // Optionally wait a bit before retrying
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ignored) {}
             }
->>>>>>> Stashed changes
         }
-
-    } catch (Exception ex) {
-        ex.printStackTrace();
     }
 
-    return -1; // fallback dacă ceva nu merge
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public RollResult rollDice()
     {
@@ -6582,6 +6578,7 @@ public class SOCGame implements Serializable, Cloneable
 //                die1 = 0; die2 = 7;
 //            } else {
             die1 = Math.abs(rand.nextInt() % 6) + 1;
+
             die2 = Math.abs(rand.nextInt() % 6) + 1;
 //            }
 
@@ -8690,6 +8687,11 @@ public class SOCGame implements Serializable, Cloneable
      */
     public void buyRoad(final int pn)
     {
+//
+//        if(pn!=0){
+//            pad
+//        }
+
         SOCResourceSet resources = players[pn].getResources();
         resources.subtract(1, SOCResourceConstants.CLAY);
         resources.subtract(1, SOCResourceConstants.WOOD);

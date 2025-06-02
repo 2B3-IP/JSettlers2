@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import soc.ip.Point;
-import soc.UnityBridge;//
+import soc.ip.UnityBridge;//
 import soc.debug.D;
 import soc.game.GameAction;
 import soc.game.ResourceSet;
@@ -114,6 +114,7 @@ public class SOCGameMessageHandler
             case SOCMessage.PUTPIECE:
                 handlePUTPIECE(game, connection, (SOCPutPiece) message);
                 SOCPutPiece pp = (SOCPutPiece) message;
+                handler.handlePUTPIECE(game, connection, pp)
                  coord = pp.getCoordinates();
                 int pieceType = pp.getPieceType();
 
