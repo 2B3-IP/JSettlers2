@@ -6583,6 +6583,7 @@ public class SOCGame implements Serializable, Cloneable
 //            }
 
             currentDice = GetValueFromBackend();
+            System.out.println(" asta e valoarea " + currentDice);
         } while ((currentDice == 7) && ! okToRoll7);
 
         currentRoll.update(die1, die2);  // also clears currentRoll.cloth (SC_CLVI)

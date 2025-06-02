@@ -6877,7 +6877,7 @@ import javax.swing.JComponent;
                             System.out.println(line);
                             // BUY ROAD  1 1 1
                             switch (keyword) {
-                                case "END_TURN":
+                               case "END_TURN":
                                     fakeButton2Chosen(boardPanel.playerInterface);
                                     break;
                                 case "BUILD":
