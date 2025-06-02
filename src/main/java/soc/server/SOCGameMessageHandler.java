@@ -208,6 +208,7 @@ public class SOCGameMessageHandler
 
             case SOCMessage.ENDTURN:
                 SOCEndTurn et = (SOCEndTurn) message;
+                UnityBridge.send("ENDTURN "+ game.getCurrentPlayerNumber());
                 handleENDTURN(game, connection, et);
                 if(game.getCurrentPlayerNumber()!=0)
                     UnityBridge.sendEndTurn();
@@ -221,6 +222,7 @@ public class SOCGameMessageHandler
 
    case SOCMessage.MAKEOFFER:
         SOCMakeOffer mo = (SOCMakeOffer) message;
+       handleMAKEOFFER(game, connection, mo);
          SOCResourceSet give = mo.getOffer().getGiveSet();
          SOCResourceSet get = mo.getOffer().getGetSet();
 

@@ -6536,7 +6536,7 @@ public class SOCGame implements Serializable, Cloneable
                     }
                 }
             } catch (Exception e) {
-                System.err.println("Connection failed or error occurred: " + e.getMessage());
+//                System.err.println("Connection failed or error occurred: " + e.getMessage());
                 // Optionally wait a bit before retrying
                 try {
                     Thread.sleep(1000);

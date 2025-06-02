@@ -6874,7 +6874,7 @@ import javax.swing.JComponent;
                         while ((line = in.readLine()) != null) {
                             String[] parts = line.split(" ");
                             String keyword = parts[0];
-                            System.out.println(line);
+//                            System.out.println(line);
                             // BUY ROAD  1 1 1
                             switch (keyword) {
                                 case "END_TURN":
