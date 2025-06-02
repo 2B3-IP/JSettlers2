@@ -6523,6 +6523,7 @@ public class SOCGame implements Serializable, Cloneable
          PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
          BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
+<<<<<<< Updated upstream
         // Trimite comanda
         out.println("GET_DICE");
 
@@ -6534,6 +6535,27 @@ public class SOCGame implements Serializable, Cloneable
             return Integer.parseInt(parts[1]);
         } else {
             System.out.println("Unexpected response: " + response);
+=======
+                String line;
+                while ((line = in.readLine()) != null) {
+                    String[] parts = line.split(" ");
+                    String keyword = parts[0];
+                    System.out.println(line);
+                    if ("DICE_NUMBER".equals(keyword)) {
+                        // return Integer.parseInt(parts[1]);
+                        return 7;
+                    } else {
+                        System.err.println("Unknown keyword: " + keyword);
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Connection failed or error occurred: " + e.getMessage());
+                // Optionally wait a bit before retrying
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {}
+            }
+>>>>>>> Stashed changes
         }
 
     } catch (Exception ex) {
