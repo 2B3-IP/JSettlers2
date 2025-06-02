@@ -173,7 +173,6 @@ public class SOCGameMessageHandler
                 SOCDiceResult dr = (SOCDiceResult) message;
                 int diceSum = dr.getResult();
                 if (diceSum >= 2 && diceSum <= 12)  // opțional: evită cazul -1 (reset)
-                 UnityBridge.sendDiceRoll(diceSum);
                 break;
 
             case SOCMessage.DISCARD:
