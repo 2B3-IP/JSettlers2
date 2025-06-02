@@ -25,10 +25,10 @@
 package soc.game;
 
 import soc.message.*;
-
+import soc.ip.CoordBridge;
 import java.io.*;
 import java.net.Socket;
-
+import soc.ip.Point;
 import soc.disableDebug.D;
 import soc.game.GameAction.ActionType;
 import soc.game.GameAction.EffectType;
@@ -6520,7 +6520,6 @@ public class SOCGame implements Serializable, Cloneable
 
     public static int GetValueFromBackend() {
         try (Socket socket = new Socket("localhost", 6969); BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
             String line;
             while ((line = in.readLine()) != null) {
                 String[] parts = line.split(" ");
@@ -6565,6 +6564,7 @@ public class SOCGame implements Serializable, Cloneable
               && (( ! isGameOptionSet("N7")) || (roundCount > getGameOptionIntValue("N7")));
 
         int die1, die2;
+        System.out.println("a mers ");
         do
         {
 //            if (rand.nextBoolean())  // JM TEMP - try trigger bot discard-no-move-robber bug
@@ -6576,6 +6576,7 @@ public class SOCGame implements Serializable, Cloneable
 //            }
 
             currentDice = GetValueFromBackend();
+            System.out.println("a mers "+ currentDice);
         } while ((currentDice == 7) && ! okToRoll7);
 
         currentRoll.update(die1, die2);  // also clears currentRoll.cloth (SC_CLVI)

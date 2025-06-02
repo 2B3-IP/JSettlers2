@@ -6886,6 +6886,25 @@ import javax.swing.JComponent;
                                             Integer.valueOf(parts[2]),
                                             Integer.valueOf(parts[3]),
                                             Integer.valueOf(parts[4]));
+                             case "MOVEROBBER":
+                                // Expect exactly: "MOVEROBBER <hexX> <hexY>"
+                                if (parts.length < 3) {
+                                    System.err.println("Malformed MOVEROBBER: " + line);
+                                    break;
+                                }
+                                int rx = Integer.parseInt(parts[1]);
+                                int ry = Integer.parseInt(parts[2]);
+                                Integer base = CoordBridge.backToAiCode.get(new soc.ip.Point<>(rx, ry));
+
+                                if (base == null) {
+                                    System.err.println("Unknown hex (" + rx + "," + ry + ")");
+                                    break;
+                                }
+                                int hilight = base.intValue();
+                                boardPanel.mode = SOCBoardPanel.PLACE_ROBBER;
+                                boardPanel.fakeMouseClicked(hilight);
+                                break;
+
                             }
                         }
 
