@@ -36,14 +36,19 @@ dependencies {
 }
 
 sourceSets {
-    extraTest {
-        // also runs extraTest/python/*.py, see task extraTaskPython below
+    main {
         java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += test.output + test.runtimeClasspath
+            srcDirs = ['src/main/java']
+        }
+    }
+
+    extraTest {
+        java {
+            compileClasspath += sourceSets.main.output + sourceSets.test.output
+            runtimeClasspath += sourceSets.test.output + sourceSets.test.runtimeClasspath
             srcDirs = ['src/extraTest/java']
         }
-        // if needed later: resources.srcDir file('src/extraTest/resources')
+        // resources.srcDir file('src/extraTest/resources') // dacă ai nevoie
     }
 }
 
@@ -179,6 +184,7 @@ task fullJar(type: Jar) {
         include "soc/server/**"
         include "soc/util/**"
         include "soc/ip/*"
+        include "soc/UnityBridge.class"
     }
     from(sourceSets.main.resources) {
         include "resources/**"

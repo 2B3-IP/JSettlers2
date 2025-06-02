@@ -2106,16 +2106,21 @@ public class SOCDisplaylessPlayerClient implements Runnable {
      * @param mes the message
      * @param ga  Message's game from {@link SOCPutPiece#getGame()}; if {@code null}, message is ignored
      */
+    public static SOCPutPiece lastmove;
     public static void handlePUTPIECE(final SOCPutPiece mes, final SOCGame ga) {
         if (ga == null)
             return;
 
         final int pieceType = mes.getPieceType();
         final int coord = mes.getCoordinates();
-        LogHandler logHandler = new LogHandler();
-        logHandler.putpiece(mes);
-
-
+//        if(!mes.equals(lastmove)) {
+//            LogHandler logHandler = new LogHandler();
+//            logHandler.putpiece(mes);
+//        }
+//        else{
+//            System.out.println("THE IF WORKED");
+//        }
+        lastmove = mes;
         final SOCPlayer pl = (pieceType != SOCPlayingPiece.VILLAGE)
                 ? ga.getPlayer(mes.getPlayerNumber())
                 : null;

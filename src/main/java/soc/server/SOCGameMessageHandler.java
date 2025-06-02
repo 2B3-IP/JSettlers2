@@ -112,33 +112,49 @@ public class SOCGameMessageHandler
          * someone put a piece on the board
          */
             case SOCMessage.PUTPIECE:
-
+                handlePUTPIECE(game, connection, (SOCPutPiece) message);
                 SOCPutPiece pp = (SOCPutPiece) message;
                  coord = pp.getCoordinates();
                 int pieceType = pp.getPieceType();
 
-                String[] parts = CoordBridge.getEdge(coord).split(" ");
-                int x = Integer.parseInt(parts[0]);
-                int y = Integer.parseInt(parts[1]);
-                int d = Integer.parseInt(parts[2]);
+                String[] parts;
+                int x ;
+                int y ;
+                int d ;
 
-                switch (pieceType) {
-                    case SOCPlayingPiece.SETTLEMENT:
-                        UnityBridge.sendBuildSettlement(x, y, d);
-                        break;
-                    case SOCPlayingPiece.CITY:
-                        UnityBridge.sendBuildCity(x, y, d);
-                        break;
-                    case SOCPlayingPiece.ROAD:
-                        UnityBridge.sendBuildRoad(x, y, d);
-                        break;
+                if(((SOCPutPiece) message).getPlayerNumber()!=0) {
+                    switch (pieceType) {
+                        case SOCPlayingPiece.SETTLEMENT:
+                            parts = CoordBridge.getVertex(coord).split(" ");
+                            x = Integer.parseInt(parts[0]);
+                            y = Integer.parseInt(parts[1]);
+                            d = Integer.parseInt(parts[2]);
+                            UnityBridge.sendBuildSettlement(x, y, d);
+                            break;
+                        case SOCPlayingPiece.CITY:
+                            parts = CoordBridge.getVertex(coord).split(" ");
+                            x = Integer.parseInt(parts[0]);
+                            y = Integer.parseInt(parts[1]);
+                            d = Integer.parseInt(parts[2]);
+                            UnityBridge.sendBuildCity(x, y, d);
+                            break;
+                        case SOCPlayingPiece.ROAD:
+                            parts = CoordBridge.getEdge(coord).split(" ");
+                            x = Integer.parseInt(parts[0]);
+                            y = Integer.parseInt(parts[1]);
+                            d = Integer.parseInt(parts[2]);
+                            UnityBridge.sendBuildRoad(x, y, d);
+                            break;
+                    }
                 }
+
                 break;
 
         /**
          * a player is moving the robber or pirate
          */
             case SOCMessage.MOVEROBBER:
+                handleMOVEROBBER(game, connection, (SOCMoveRobber) message);
                 SOCMoveRobber mr = (SOCMoveRobber) message;
                  coord = mr.getCoordinates();
 
@@ -152,12 +168,26 @@ public class SOCGameMessageHandler
                     }
                 }
                 break;
+            case SOCMessage.ROLLDICE:
+
+                //createNewGameEventRecord();
+                //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
+                handleROLLDICE(game, connection, (SOCRollDice) message);
+
+                //ga = (SOCGame)gamesData.get(((SOCRollDice)mes).getGame());
+                //currentGameEventRecord.setSnapshot(ga);
+                //saveCurrentGameEventRecord(((SOCRollDice)mes).getGame());
+                break;
 
             case SOCMessage.DICERESULT:
                 SOCDiceResult dr = (SOCDiceResult) message;
                 int diceSum = dr.getResult();
-                if (diceSum >= 2 && diceSum <= 12)  // opțional: evită cazul -1 (reset)
-                 UnityBridge.sendDiceRoll(diceSum);
+                if (diceSum >= 2 && diceSum <= 12);  // opțional: evită cazul -1 (reset)
+
+//                SOCEndTurn t = (SOCEndTurn) message;
+//                handleENDTURN(game, connection, t);
+//                if(((SOCPutPiece) message).getPlayerNumber()!=0)
+//                    UnityBridge.sendEndTurn();
                 break;
 
             case SOCMessage.DISCARD:
@@ -178,8 +208,10 @@ public class SOCGameMessageHandler
 
             case SOCMessage.ENDTURN:
                 SOCEndTurn et = (SOCEndTurn) message;
+                UnityBridge.send("ENDTURN "+ game.getCurrentPlayerNumber());
                 handleENDTURN(game, connection, et);
-                UnityBridge.sendEndTurn();
+                if(game.getCurrentPlayerNumber()!=0)
+                    UnityBridge.sendEndTurn();
                 break;
 
             case SOCMessage.CHOOSEPLAYER:
@@ -190,6 +222,7 @@ public class SOCGameMessageHandler
 
    case SOCMessage.MAKEOFFER:
         SOCMakeOffer mo = (SOCMakeOffer) message;
+       handleMAKEOFFER(game, connection, mo);
          SOCResourceSet give = mo.getOffer().getGiveSet();
          SOCResourceSet get = mo.getOffer().getGetSet();
 
@@ -2000,7 +2033,7 @@ public class SOCGameMessageHandler
      * @param player  Requesting player; must be current player
      * @param c   Requesting {@code player}'s connection
      * @param pieceType {@link SOCPlayingPiece#SETTLEMENT}, {@link SOCPlayingPiece#SHIP}, etc
-     * @param sendGameState  True if {@link SOCGameHander#sendGameState(SOCGame)} should be called
+     //* @param sendGameState  True if {@link //SOCGameHander#sendGameState(SOCGame)} should be called
      *            after buying the piece
      * @return  True if piece build was allowed, false if it was rejected.<BR>
      *   If false, game state is unchanged. If true, it's a state like {@link SOCGame#PLACING_ROAD}
