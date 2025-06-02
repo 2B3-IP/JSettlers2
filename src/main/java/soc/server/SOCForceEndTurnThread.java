@@ -96,11 +96,11 @@ import soc.server.genericServer.Connection;
 
         Connection rconn = srv.getConnection(rname);
         final boolean isStubborn = pl.isStubbornRobot();
-        System.err.println
-            ("For robot " + rname
-             + ((notCurrentPlayer) ? ": force discard/pick" : ": force end turn")
-             + " in game " + ga.getName() + " pn=" + plNum + " state " + gs
-             + (isStubborn ? " (stubborn)" : ""));
+//        System.err.println
+//            ("For robot " + rname
+//             + ((notCurrentPlayer) ? ": force discard/pick" : ": force end turn")
+//             + " in game " + ga.getName() + " pn=" + plNum + " state " + gs
+//             + (isStubborn ? " (stubborn)" : ""));
         if (gs == SOCGame.WAITING_FOR_DISCARDS)
             System.err.println("  srv resource count = " + pl.getResources().getTotal());
         else if (gs == SOCGame.WAITING_FOR_PICK_GOLD_RESOURCE)

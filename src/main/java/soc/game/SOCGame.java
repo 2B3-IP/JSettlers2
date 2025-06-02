@@ -24,6 +24,7 @@
  **/
 package soc.game;
 
+import soc.UnityBridge;
 import soc.message.*;
 
 import java.io.*;
@@ -6519,26 +6520,31 @@ public class SOCGame implements Serializable, Cloneable
      */
 
     public static int GetValueFromBackend() {
-        try (Socket socket = new Socket("localhost", 6969); BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        while (true) {
+            try (Socket socket = new Socket("localhost", 6969);
+                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-            String line;
-            while ((line = in.readLine()) != null) {
-                String[] parts = line.split(" ");
-                String keyword = parts[0];
-                System.out.println(line);
-                switch (keyword) {
-                    case "DICE_NUMBER":
+                String line;
+                while ((line = in.readLine()) != null) {
+                    String[] parts = line.split(" ");
+                    String keyword = parts[0];
+                    System.out.println(line);
+                    if ("DICE_NUMBER".equals(keyword)) {
                         return Integer.parseInt(parts[1]);
-                    default:
-                        throw new IOException("Unknown keyword: " + keyword);
+                    } else {
+                        System.err.println("Unknown keyword: " + keyword);
+                    }
                 }
+            } catch (Exception e) {
+                System.err.println("Connection failed or error occurred: " + e.getMessage());
+                // Optionally wait a bit before retrying
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {}
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-
-        return 6; // fallback dacă ceva nu merge
     }
+
 
 
 
@@ -6572,6 +6578,7 @@ public class SOCGame implements Serializable, Cloneable
 //                die1 = 0; die2 = 7;
 //            } else {
             die1 = Math.abs(rand.nextInt() % 6) + 1;
+
             die2 = Math.abs(rand.nextInt() % 6) + 1;
 //            }
 
@@ -8680,6 +8687,11 @@ public class SOCGame implements Serializable, Cloneable
      */
     public void buyRoad(final int pn)
     {
+//
+//        if(pn!=0){
+//            pad
+//        }
+
         SOCResourceSet resources = players[pn].getResources();
         resources.subtract(1, SOCResourceConstants.CLAY);
         resources.subtract(1, SOCResourceConstants.WOOD);

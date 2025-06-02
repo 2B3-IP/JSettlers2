@@ -168,12 +168,26 @@ public class SOCGameMessageHandler
                     }
                 }
                 break;
+            case SOCMessage.ROLLDICE:
+
+                //createNewGameEventRecord();
+                //currentGameEventRecord.setMessageIn(new SOCMessageRecord(mes, c.getData(), "SERVER"));
+                handleROLLDICE(game, connection, (SOCRollDice) message);
+
+                //ga = (SOCGame)gamesData.get(((SOCRollDice)mes).getGame());
+                //currentGameEventRecord.setSnapshot(ga);
+                //saveCurrentGameEventRecord(((SOCRollDice)mes).getGame());
+                break;
 
             case SOCMessage.DICERESULT:
                 SOCDiceResult dr = (SOCDiceResult) message;
                 int diceSum = dr.getResult();
-                if (diceSum >= 2 && diceSum <= 12)  // opțional: evită cazul -1 (reset)
-                 UnityBridge.sendDiceRoll(diceSum);
+                if (diceSum >= 2 && diceSum <= 12);  // opțional: evită cazul -1 (reset)
+
+//                SOCEndTurn t = (SOCEndTurn) message;
+//                handleENDTURN(game, connection, t);
+//                if(((SOCPutPiece) message).getPlayerNumber()!=0)
+//                    UnityBridge.sendEndTurn();
                 break;
 
             case SOCMessage.DISCARD:
@@ -195,7 +209,8 @@ public class SOCGameMessageHandler
             case SOCMessage.ENDTURN:
                 SOCEndTurn et = (SOCEndTurn) message;
                 handleENDTURN(game, connection, et);
-                UnityBridge.sendEndTurn();
+                if(game.getCurrentPlayerNumber()!=0)
+                    UnityBridge.sendEndTurn();
                 break;
 
             case SOCMessage.CHOOSEPLAYER:
