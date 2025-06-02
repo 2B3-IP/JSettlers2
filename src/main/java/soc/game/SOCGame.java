@@ -6573,14 +6573,14 @@ public class SOCGame implements Serializable, Cloneable
         int die1, die2;
         do
         {
-//            if (rand.nextBoolean())  // JM TEMP - try trigger bot discard-no-move-robber bug
-//            {
-//                die1 = 0; die2 = 7;
-//            } else {
+           if (rand.nextBoolean())  // JM TEMP - try trigger bot discard-no-move-robber bug
+           {
+               die1 = 0; die2 = 7;
+           } else {
             die1 = Math.abs(rand.nextInt() % 6) + 1;
 
             die2 = Math.abs(rand.nextInt() % 6) + 1;
-//            }
+         }
 
             currentDice = GetValueFromBackend();
             System.out.println(" asta e valoarea " + currentDice);

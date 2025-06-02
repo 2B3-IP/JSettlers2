@@ -1,6 +1,5 @@
 package soc.ip;
-
-
+import soc.util.Pair;
 import java.util.*;
 
 import soc.ip.Point;
@@ -58,6 +57,11 @@ public class CoordBridge {
         }
         return "ERROR";
     }
+    public static Point<Integer, Integer> getHex(int code) {
+        return aiCodeToBack.get(code);
+    }
+
+
 
 
     public static String getEdge(int code) {

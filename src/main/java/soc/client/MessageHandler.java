@@ -22,7 +22,8 @@
  * The maintainer of this program can be reached at jsettlers@nand.net
  **/
 package soc.client;
-
+import soc.ip.*;
+import soc.ip.Point;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import soc.server.SOCServer;
-
+import soc.util.Pair;
 import soc.baseclient.SOCDisplaylessPlayerClient;
 import soc.disableDebug.D;
 import soc.game.SOCBoardLarge;
@@ -419,13 +420,14 @@ public class MessageHandler
             /**
              * the robber or pirate moved
              */
-            case SOCMessage.MOVEROBBER:
-                handleMOVEROBBER((SOCMoveRobber) mes);
-                break;
 
-            /**
-             * prompt this player to discard
-             */
+                case SOCMessage.MOVEROBBER:
+                    handleMOVEROBBER((SOCMoveRobber) mes);
+                    break;
+
+                /**
+                 * prompt this player to discard
+                 */
             case SOCMessage.DISCARDREQUEST:
                 handleDISCARDREQUEST((SOCDiscardRequest) mes);
                 break;
@@ -2180,23 +2182,22 @@ public class MessageHandler
      * handle the "robber moved" or "pirate moved" message.
      * @param mes  the message
      */
-    protected void handleMOVEROBBER(SOCMoveRobber mes)
-    {
+    protected void handleMOVEROBBER(SOCMoveRobber mes) {
         SOCGame ga = client.games.get(mes.getGame());
         if (ga == null)
             return;
 
-        /**
-         * Note: Don't call ga.moveRobber() because that will call the
-         * functions to do the stealing.  We just want to say where
-         * the robber moved without seeing if something was stolen.
-         */
         ga.setPlacingRobberForKnightCard(false);
         int newHex = mes.getCoordinates();
         final boolean isPirate = (newHex <= 0);
-        if (! isPirate)
-        {
+
+        if (!isPirate) {
             ga.getBoard().setRobberHex(newHex, true);
+
+            Point<Integer, Integer> pos = CoordBridge.getHex(newHex);
+            if (pos != null)
+                LogHandler.moveRobber(mes.getPlayerNumber(), pos.getA(), pos.getB());
+
         } else {
             newHex = -newHex;
             ((SOCBoardLarge) ga.getBoard()).setPirateHex(newHex, true);

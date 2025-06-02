@@ -421,6 +421,7 @@ public interface PlayerClientListener
 
     /**
      * Clear any visible trade messages/responses.
+     *
      * @param playerToReset May be {@code null} to clear all seats
      */
     void requestedTradeReset(SOCPlayer playerToReset);
