@@ -6581,8 +6581,8 @@ public class SOCGame implements Serializable, Cloneable
 
             die2 = Math.abs(rand.nextInt() % 6) + 1;
 //            }
-
-            currentDice = GetValueFromBackend();
+              currentDice = die1+die2;
+            //currentDice = GetValueFromBackend();
         } while ((currentDice == 7) && ! okToRoll7);
 
         currentRoll.update(die1, die2);  // also clears currentRoll.cloth (SC_CLVI)
@@ -8401,20 +8401,59 @@ public class SOCGame implements Serializable, Cloneable
      * @see #makeBankTrade(SOCResourceSet, SOCResourceSet)
      * @see #rejectTradeOffersTo(int)
      */
-    public void makeTrade(final int offering, final int accepting)
-    {
-        if (isGameOptionSet("NT"))
-            return;
+public static final String[] RESOURCES = {"CLAY", "ORE", "SHEEP", "WHEAT", "WOOD"};
 
-        SOCTradeOffer offer = players[offering].getCurrentOffer();
-        final ResourceSet offeredToGive = offer.getGiveSet(), offeredToGet = offer.getGetSet();
+  public void makeTrade(final int offering, final int accepting)
+{
+    if (isGameOptionSet("NT"))
+        return;
 
-        players[offering].makeTrade(offeredToGive, offeredToGet);
-        players[accepting].makeTrade(offeredToGet, offeredToGive);
+    SOCTradeOffer offer = players[offering].getCurrentOffer();
+    final ResourceSet offeredToGive = offer.getGiveSet(), offeredToGet = offer.getGetSet();
 
-        lastActionTime = System.currentTimeMillis();
-        lastAction = null;
+    players[offering].makeTrade(offeredToGive, offeredToGet);
+    players[accepting].makeTrade(offeredToGet, offeredToGive);
+    
+        String  tradeMsg = "FirstPlayer: " + players[offering].getName()
+        + " gave " + formatResources(offeredToGive)
+        + " to " + players[accepting].getPlayerNumber()
+        + " and received " + formatResources(offeredToGet);
+        System.out.println(tradeMsg); 
+        UnityBridge.sendBotsTrade(tradeMsg);
+
+       // System.out.println(tradeMsg); 
+       // UnityBridge.sendInfoTradeBots(tradeMsg);
+// doar afisare, fără socket
+    lastActionTime = System.currentTimeMillis();
+    lastAction = null;
+}
+private static final int[] RESOURCE_IDS = {
+    SOCResourceConstants.CLAY,   // 1
+    SOCResourceConstants.ORE,    // 2
+    SOCResourceConstants.SHEEP,  // 3
+    SOCResourceConstants.WHEAT,  // 4
+    SOCResourceConstants.WOOD    // 5
+};
+
+private String formatResources(ResourceSet res) {
+    StringBuilder sb = new StringBuilder();
+    boolean needComma = false;
+
+    for (int i = 0; i < RESOURCE_IDS.length; i++) {
+        int amount = res.getAmount(RESOURCE_IDS[i]);  // Acces corect
+        if (amount > 0) {
+            if (needComma) sb.append(" and ");
+            sb.append(amount).append("x ").append(RESOURCES[i]);
+            needComma = true;
+        }
     }
+
+    return sb.toString();
+}
+
+
+
+
 
     /**
      * Can we undo this bank trade?

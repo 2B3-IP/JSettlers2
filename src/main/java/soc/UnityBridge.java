@@ -156,4 +156,7 @@ public final class UnityBridge {
     public static void sendUndoPutPiece(int x, int y, int loc) {
         send("UNDOPUTPIECE " + x + " " + y + " " + loc);
     }
+    public static void sendBotsTrade(String name) {
+       send("TRADE" + name);
+   }
 }
