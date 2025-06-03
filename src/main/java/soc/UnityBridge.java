@@ -14,8 +14,9 @@ public final class UnityBridge {
 
     public static boolean buy = false;
 
-    private static void send(String msg) {
-        System.out.println("musca " + msg);
+    public static void send(String msg) {
+        System.out.println("SENT: " + msg);
+
         try (Socket s = new Socket(HOST, PORT);
              PrintWriter w = new PrintWriter(s.getOutputStream(), true)) {
             w.println(msg);

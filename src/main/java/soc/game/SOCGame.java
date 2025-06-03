@@ -6520,6 +6520,7 @@ public class SOCGame implements Serializable, Cloneable
      */
 
     public static int GetValueFromBackend() {
+        UnityBridge.buy = true; // switch from building to buying
         while (true) {
             try (Socket socket = new Socket("localhost", 6969);
                  BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
@@ -6528,7 +6529,7 @@ public class SOCGame implements Serializable, Cloneable
                 while ((line = in.readLine()) != null) {
                     String[] parts = line.split(" ");
                     String keyword = parts[0];
-                    System.out.println(line);
+                    System.out.println("RECEIVED: "+ line);
                     if ("DICE_NUMBER".equals(keyword)) {
                         return Integer.parseInt(parts[1]);
                     } else {
@@ -6536,7 +6537,7 @@ public class SOCGame implements Serializable, Cloneable
                     }
                 }
             } catch (Exception e) {
-                System.err.println("Connection failed or error occurred: " + e.getMessage());
+//                System.err.println("Connection failed or error occurred: " + e.getMessage());
                 // Optionally wait a bit before retrying
                 try {
                     Thread.sleep(1000);
