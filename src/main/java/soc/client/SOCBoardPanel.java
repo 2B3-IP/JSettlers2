@@ -45,28 +45,8 @@ import soc.server.SOCGameHandler;
 import soc.server.SOCGameMessageHandler;
 import soc.util.SOCStringManager;
 
-import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Composite;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
-import java.awt.RenderingHints;
-import java.awt.Stroke;
-import java.awt.Transparency;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
@@ -6857,7 +6837,6 @@ import javax.swing.JComponent;
         private final String host;
         private final int port;
         private final SOCBoardPanel boardPanel;
-        private SOCPlayerInterface playerInterface;
 
         public UnityPrintTask(String host, int port, SOCBoardPanel boardPanel) {
             this.host = host;
@@ -6890,11 +6869,14 @@ import javax.swing.JComponent;
                                             Integer.valueOf(parts[4]));
                                     break;
                                 case "BUY":
-                                    handleBuy(parts[1]);
-                                    handleBuild(parts[1],
+                                    handleBuy(parts[1],
                                             Integer.valueOf(parts[2]),
                                             Integer.valueOf(parts[3]),
                                             Integer.valueOf(parts[4]));
+//                                    handleBuild(parts[1],
+//                                            Integer.valueOf(parts[2]),
+//                                            Integer.valueOf(parts[3]),
+//                                            Integer.valueOf(parts[4]));
                                     break;
                                 case "MOVEROBBER":
                                     // Expect exactly: "MOVEROBBER <hexX> <hexY>"
@@ -6934,8 +6916,6 @@ import javax.swing.JComponent;
 
         void handleBuild(String type, int x, int y, int pos) {
             int code=0;
-            //type  to upper
-
             type = type.toUpperCase();
             switch (type) {
                 case "HOUSE":
@@ -6947,28 +6927,36 @@ import javax.swing.JComponent;
                     break;
 
             }
-
             boardPanel.fakeMouseClicked(code);
     }
-    void handleBuy(String type) {
+    void handleBuy(String type,int x,int y,int pos) {
             type = type.toUpperCase();
+            final GameMessageSender messageSender = boardPanel.playerInterface.getClient().getGameMessageSender();
+            int code;
             switch (type){
                 case "ROAD":
-//                    System.out.println("HERE");
-                    boardPanel.game.buyRoad(0);
 
+                    boardPanel.playerInterface.buildingPanel.roadBut.doClick();
 
-//                    handler.reportRsrcGainLoss(boardPanel.game, SOCRoad.COST, true, false, 0, -1, null);
-//                    handler.sendGameState(boardPanel.game);
+                    code = CoordBridge.getEdge(x,y,pos);
+                    messageSender.putPiece(boardPanel.game, new SOCRoad(boardPanel.game.getPlayer(0), code, boardPanel.board));
 
-
+                    boardPanel.clearModeAndHilight(SOCPlayingPiece.ROAD);
 
                     break;
                     case "HOUSE":
-                      boardPanel.game.buySettlement(0);
+                        pos = (pos + 1) % 6; // the orientation of the board is different in the backend
+                        code = CoordBridge.getVertex(x, y, pos);
+                      boardPanel.playerInterface.buildingPanel.settlementBut.doClick();
+                      messageSender.putPiece(boardPanel.game,new SOCSettlement(boardPanel.game.getPlayer(0),code,boardPanel.board));
+                      boardPanel.clearModeAndHilight(SOCPlayingPiece.SETTLEMENT);
                       break;
                 case "CITY":
-                    boardPanel.game.buyCity(0);
+                    pos = (pos + 1) % 6; // the orientation of the board is different in the backend
+                    code = CoordBridge.getVertex(x, y, pos);
+                    boardPanel.playerInterface.buildingPanel.settlementBut.doClick();
+                    messageSender.putPiece(boardPanel.game,new SOCCity(boardPanel.game.getPlayer(0),code,boardPanel.board));
+                    boardPanel.clearModeAndHilight(SOCPlayingPiece.CITY);
                     break;
             }
     }
@@ -7050,7 +7038,7 @@ import javax.swing.JComponent;
                     case PLACE_INIT_ROAD:
                     case PLACE_ROAD:
                     case PLACE_FREE_ROAD_OR_SHIP:
-
+                        System.out.println("ROAD TIME");
                         if (hilight == -1)
                             hilight = 0;  // Road on edge 0x00
                         if (player.isPotentialRoad(hilight) && ! hilightIsShip)
