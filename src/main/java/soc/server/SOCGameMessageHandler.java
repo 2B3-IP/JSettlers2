@@ -189,8 +189,7 @@ public class SOCGameMessageHandler
 //                if(((SOCPutPiece) message).getPlayerNumber()!=0)
 //                    UnityBridge.sendEndTurn();
                 break;
-
-            case SOCMessage.DISCARD:
+                case SOCMessage.DISCARD:
     SOCDiscard sd = (SOCDiscard) message;
     ResourceSet rs = sd.getResources();
 
@@ -202,8 +201,7 @@ public class SOCGameMessageHandler
         rs.getAmount(SOCResourceConstants.WHEAT),
         rs.getAmount(SOCResourceConstants.WOOD)
     };
-
-    UnityBridge.sendDiscard(resources);
+    UnityBridge.sendDiscard(sd.getPlayerNumber(), resources);
     break;
 
             case SOCMessage.ENDTURN:

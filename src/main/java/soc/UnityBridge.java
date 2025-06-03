@@ -63,10 +63,11 @@ public final class UnityBridge {
 //        send("DICE_NUMBER " + dice);
     }
 
-    public static void sendDiscard(int[] res) {
-//        StringBuilder sb = new StringBuilder("DISCARD");
-//        for (int r : res) sb.append(" ").append(r);
-//        send(sb.toString());
+    public static void sendDiscard(int playerId,int[] res) {
+            StringBuilder sb = new StringBuilder("DISCARD");
+            sb.append(" ").append(playerId);
+            for (int r : res) sb.append(" ").append(r);
+            send(sb.toString());
     }
 
     public static void sendEndTurn() {
