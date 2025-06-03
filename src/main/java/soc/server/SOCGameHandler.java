@@ -3638,9 +3638,9 @@ public class SOCGameHandler extends GameHandler
      * @see SOCGameMessageHandler#handleROLLDICE(SOCGame, Connection, SOCRollDice)
      * @since 1.1.00
      */
-    void reportRsrcGainLoss
-        (final SOCGame ga, final ResourceSet resourceSet, final boolean isLoss, boolean isNews,
-         final int mainPlayer, final int tradingPlayer, Connection playerConn)
+    public void reportRsrcGainLoss
+    (final SOCGame ga, final ResourceSet resourceSet, final boolean isLoss, boolean isNews,
+     final int mainPlayer, final int tradingPlayer, Connection playerConn)
     {
         reportRsrcGainLossForVersions
             (ga, resourceSet, isLoss, isNews, mainPlayer, tradingPlayer, playerConn, 0);

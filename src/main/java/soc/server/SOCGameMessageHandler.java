@@ -210,8 +210,7 @@ public class SOCGameMessageHandler
                 SOCEndTurn et = (SOCEndTurn) message;
                 UnityBridge.send("ENDTURN "+ game.getCurrentPlayerNumber());
                 handleENDTURN(game, connection, et);
-                if(game.getCurrentPlayerNumber()!=0)
-                    UnityBridge.sendEndTurn();
+
                 break;
 
             case SOCMessage.CHOOSEPLAYER:

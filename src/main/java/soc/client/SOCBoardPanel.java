@@ -22,6 +22,7 @@
  **/
 package soc.client;
 
+import soc.UnityBridge;
 import soc.game.GameAction;
 import soc.game.SOCBoard;
 import soc.game.SOCBoardLarge;
@@ -40,6 +41,8 @@ import soc.game.SOCShip;
 import soc.game.SOCVillage;
 import soc.ip.CoordBridge;
 import soc.message.SOCSimpleRequest;  // to request simple things from the server without defining a lot of methods
+import soc.server.SOCGameHandler;
+import soc.server.SOCGameMessageHandler;
 import soc.util.SOCStringManager;
 
 import java.awt.AlphaComposite;
@@ -6951,7 +6954,15 @@ import javax.swing.JComponent;
             type = type.toUpperCase();
             switch (type){
                 case "ROAD":
+//                    System.out.println("HERE");
                     boardPanel.game.buyRoad(0);
+
+
+//                    handler.reportRsrcGainLoss(boardPanel.game, SOCRoad.COST, true, false, 0, -1, null);
+//                    handler.sendGameState(boardPanel.game);
+
+
+
                     break;
                     case "HOUSE":
                       boardPanel.game.buySettlement(0);
@@ -6966,7 +6977,6 @@ import javax.swing.JComponent;
 
         public void fakeButton2Chosen(SOCPlayerInterface playerInterface)
         {
-
             final GameMessageSender messageSender = playerInterface.getClient().getGameMessageSender();
             final SOCGame game = playerInterface.getGame();
             messageSender.endTurn(game);
