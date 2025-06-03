@@ -21,7 +21,7 @@
  * The maintainer of this program can be reached at jsettlers@nand.net
  **/
 package soc.client;
-
+import soc.ip.Point;
 import soc.game.GameAction;
 import soc.game.SOCBoard;
 import soc.game.SOCBoardLarge;
@@ -245,6 +245,7 @@ import javax.swing.JComponent;
      * @see #halfdeltaY
      * @since 1.1.00
      */
+   public static (int x, int y)? lastRobberCoords = null;
     private static final int halfdeltaX = 27;
 
     /**
@@ -6874,7 +6875,8 @@ import javax.swing.JComponent;
                         while ((line = in.readLine()) != null) {
                             String[] parts = line.split(" ");
                             String keyword = parts[0];
-//                            System.out.println(line);
+                            System.out.println(line);
+//                           System.out.println(line);
                             // BUY ROAD  1 1 1
                             switch (keyword) {
                                 case "END_TURN":
@@ -6893,24 +6895,55 @@ import javax.swing.JComponent;
                                             Integer.valueOf(parts[3]),
                                             Integer.valueOf(parts[4]));
                                     break;
-                                case "MOVEROBBER":
-                                    // Expect exactly: "MOVEROBBER <hexX> <hexY>"
-                                    if (parts.length < 3) {
-                                        System.err.println("Malformed MOVEROBBER: " + line);
-                                        break;
-                                    }
-                                    int rx = Integer.parseInt(parts[1]);
-                                    int ry = Integer.parseInt(parts[2]);
-                                    Integer base = CoordBridge.backToAiCode.get(new soc.ip.Point<>(rx, ry));
+                                 case "MOVEROBBER": {
+            // Mesajul vine sub forma "MOVEROBBER <x> <y>"
+            if (parts.length < 3) {
+                System.out.println("Mesaj MOVEROBBER incorect: " + line);
+                break;
+            }
 
-                                    if (base == null) {
-                                        System.err.println("Unknown hex (" + rx + "," + ry + ")");
-                                        break;
-                                    }
-                                    int hilight = base.intValue();
-                                    boardPanel.mode = SOCBoardPanel.PLACE_ROBBER;
-                                    boardPanel.fakeMouseClicked(hilight);
-                                    break;
+            // Parsex rx și ry
+            int rx, ry;
+            try {
+                rx = Integer.parseInt(parts[1]);
+                ry = Integer.parseInt(parts[2]);
+            } catch (NumberFormatException ex) {
+                System.out.println("Nu am putut parsa coordonatele MOVEROBBER: " + line);
+                break;
+            }
+
+            // Convertim (rx, ry) în codul AI (un Integer hex)
+            Point<Integer, Integer> pt = new Point<>(rx, ry);
+            Integer baseCode = CoordBridge.backToAiCode.get(pt);
+            if (baseCode == null) {
+                System.out.println("CoordBridge nu a returnat cod pentru (" + rx + "," + ry + ")");
+                break;
+            }
+            int aiCoord = baseCode; // acesta este codul AI pe care JSettlers îl înțelege
+
+            // Pregătim GameMessageSender și jucătorul curent
+            GameMessageSender sender =
+                boardPanel.playerInterface.getClient().getGameMessageSender();
+            SOCGame game = boardPanel.game;
+            SOCPlayer me = game.getPlayer(
+                boardPanel.playerInterface.getClientPlayerNumber()
+            );
+
+            // Trimitem moveRobber doar dacă JSettlers este în starea PLACING_ROBBER
+            if (game.getGameState() == SOCGame.PLACING_ROBBER) {
+                sender.moveRobber(game, me, aiCoord);
+                System.out.println(
+                    "→ Am trimis MOVEROBBER către server: aiCoord=0x"
+                    + Integer.toHexString(aiCoord)
+                );
+            } else {
+                System.out.println(
+                    "→ IGNOR mutarea tâlharului pentru că nu suntem în PLACING_ROBBER (GS="
+                    + game.getGameState() + ")"
+                );
+            }
+            break;
+        }
                             }
                         }
 
