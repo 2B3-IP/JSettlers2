@@ -245,7 +245,6 @@ import javax.swing.JComponent;
      * @see #halfdeltaY
      * @since 1.1.00
      */
-   public static (int x, int y)? lastRobberCoords = null;
     private static final int halfdeltaX = 27;
 
     /**
